@@ -34,8 +34,14 @@ if (!process.env.JWT_SECRET) {
 
 const app = express();
 
-// Middleware
-app.use(cors({ origin: "https://admin-gimnasios-frontend.vercel.app" })); // Permitir solicitudes desde el frontend en 3000
+// Middleware de CORS mejorado para manejar solicitudes preflight
+app.use(cors({
+  origin: "https://admin-gimnasios-frontend.vercel.app",
+  methods: ["GET", "POST", "PUT", "DELETE", "OPTIONS"],
+  allowedHeaders: ["Content-Type", "Authorization"],
+  credentials: true, // Permitir cookies o credenciales si las usas
+}));
+
 app.use(express.json());
 
 // Middleware para registrar solicitudes entrantes
@@ -122,6 +128,22 @@ app.get("/", (req, res) => {
   });
 });
 
+// Implementación básica de /api/auth/login (si no está en authRoutes)
+app.post("/api/auth/login", (req, res) => {
+  const { email, password } = req.body;
+  console.log("Intento de login con:", { email, password });
+  if (email === "ariana@example.com" && password === "admin123") {
+    const token = require("jsonwebtoken").sign(
+      { email },
+      process.env.JWT_SECRET,
+      { expiresIn: "1h" }
+    );
+    res.json({ token });
+  } else {
+    res.status(401).json({ error: "Credenciales inválidas" });
+  }
+});
+
 // Manejo de rutas no encontradas
 app.use((req, res) => {
   if (req.url.startsWith("/api")) {
@@ -141,6 +163,7 @@ app.use((err, req, res, next) => {
   });
 });
 
+// Iniciar servidor en el puerto asignado por Vercel o 5000 localmente
 const PORT = process.env.PORT || 5000;
 app.listen(PORT, () => {
   console.log(`🚀 Servidor corriendo en el puerto ${PORT}`);
