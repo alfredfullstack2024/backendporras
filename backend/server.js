@@ -39,7 +39,7 @@ app.use(cors({
   origin: "https://admin-gimnasios-frontend.vercel.app",
   methods: ["GET", "POST", "PUT", "DELETE", "OPTIONS"],
   allowedHeaders: ["Content-Type", "Authorization"],
-  credentials: true, // Permitir cookies o credenciales si las usas
+  credentials: true,
 }));
 
 app.use(express.json());
@@ -82,11 +82,11 @@ const composicionCorporalRoutes = require("./routes/composicionCorporal");
 app.use((req, res, next) => {
   // Excluir la ruta pública de composición corporal
   if (req.path.startsWith("/api/composicion-corporal/cliente/")) {
-    return next(); // No aplicar protect
+    return next();
   }
   // Excluir rutas de autenticación
   if (req.path.startsWith("/api/auth")) {
-    return next(); // No aplicar protect
+    return next();
   }
   // Aplicar protect a todas las demás rutas
   protect(req, res, next);
@@ -145,12 +145,13 @@ app.post("/api/auth/login", (req, res) => {
 });
 
 // Manejo de rutas no encontradas
-app.use((req, res) => {
+app.use((req, res, next) => {
   if (req.url.startsWith("/api")) {
     console.log(`⚠️ Ruta no encontrada: ${req.method} ${req.url}`);
-    res
-      .status(404)
-      .json({ mensaje: `Ruta no encontrada: ${req.method} ${req.url}` });
+    res.status(404).json({ mensaje: `Ruta no encontrada: ${req.method} ${req.url}` });
+  } else {
+    // Si no es una ruta API, responde con un 404 genérico
+    res.status(404).json({ mensaje: "Ruta no encontrada" });
   }
 });
 
