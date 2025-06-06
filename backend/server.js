@@ -35,7 +35,7 @@ if (!process.env.JWT_SECRET) {
 const app = express();
 
 // Middleware
-app.use(cors({ origin: "http://localhost:3000" })); // Permitir solicitudes desde el frontend en 3000
+app.use(cors({ origin: "https://admin-gimnasios-frontend.vercel.app" })); // Permitir solicitudes desde el frontend en 3000
 app.use(express.json());
 
 // Middleware para registrar solicitudes entrantes
