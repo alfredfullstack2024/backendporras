@@ -20,21 +20,17 @@ const debugRoutes = (prefix, router) => {
 
 // Validar variables de entorno
 if (!process.env.MONGODB_URI) {
-  console.error(
-    "❌ Error: La variable de entorno MONGODB_URI no está definida. Verifica tu archivo .env"
-  );
+  console.error("❌ Error: La variable de entorno MONGODB_URI no está definida. Verifica tu archivo .env o las variables en Render.");
   process.exit(1);
 }
 if (!process.env.JWT_SECRET) {
-  console.error(
-    "❌ Error: La variable de entorno JWT_SECRET no está definida. Verifica tu archivo .env"
-  );
+  console.error("❌ Error: La variable de entorno JWT_SECRET no está definida. Verifica tu archivo .env o las variables en Render.");
   process.exit(1);
 }
 
 const app = express();
 
-// Middleware de CORS mejorado para manejar solicitudes preflight
+// Middleware de CORS
 app.use(cors({
   origin: "https://admin-gimnasios-frontend.vercel.app",
   methods: ["GET", "POST", "PUT", "DELETE", "OPTIONS"],
@@ -44,7 +40,7 @@ app.use(cors({
 
 app.use(express.json());
 
-// Middleware para registrar solicitudes entrantes
+// Middleware para registrar solicitudes
 app.use((req, res, next) => {
   console.log(`📩 Solicitud recibida: ${req.method} ${req.url}`);
   next();
@@ -58,12 +54,14 @@ require("./models/Cliente");
 require("./models/RegistroClases");
 require("./models/ComposicionCorporal");
 
-// Conectar a MongoDB
+// Conectar a MongoDB con manejo de errores
 console.log("Iniciando conexión a MongoDB...");
-connectDB();
+connectDB().catch((error) => {
+  console.error("❌ Error al conectar a MongoDB:", error.message);
+  process.exit(1);
+});
 
 // Importar rutas
-console.log("Configurando rutas...");
 const clienteRoutes = require("./routes/clienteRoutes");
 const membresiaRoutes = require("./routes/membresiaRoutes");
 const entrenadorRoutes = require("./routes/entrenadorRoutes");
@@ -80,20 +78,16 @@ const composicionCorporalRoutes = require("./routes/composicionCorporal");
 
 // Middleware para rutas públicas y protegidas
 app.use((req, res, next) => {
-  // Excluir la ruta pública de composición corporal
   if (req.path.startsWith("/api/composicion-corporal/cliente/")) {
     return next();
   }
-  // Excluir rutas de autenticación
   if (req.path.startsWith("/api/auth")) {
     return next();
   }
-  // Aplicar protect a todas las demás rutas
   protect(req, res, next);
 });
 
 // Rutas con depuración
-console.log("Registrando rutas con depuración...");
 debugRoutes("/api/clientes", clienteRoutes);
 app.use("/api/clientes", clienteRoutes);
 debugRoutes("/api/membresias", membresiaRoutes);
@@ -123,25 +117,7 @@ app.use("/api/composicion-corporal", composicionCorporalRoutes);
 
 // Ruta raíz
 app.get("/", (req, res) => {
-  res.json({
-    mensaje: "¡Servidor de Admin-Gimnasios funcionando correctamente!",
-  });
-});
-
-// Implementación básica de /api/auth/login (si no está en authRoutes)
-app.post("/api/auth/login", (req, res) => {
-  const { email, password } = req.body;
-  console.log("Intento de login con:", { email, password });
-  if (email === "ariana@example.com" && password === "admin123") {
-    const token = require("jsonwebtoken").sign(
-      { email },
-      process.env.JWT_SECRET,
-      { expiresIn: "1h" }
-    );
-    res.json({ token });
-  } else {
-    res.status(401).json({ error: "Credenciales inválidas" });
-  }
+  res.json({ mensaje: "¡Servidor de Admin-Gimnasios funcionando correctamente!" });
 });
 
 // Manejo de rutas no encontradas
@@ -150,7 +126,6 @@ app.use((req, res, next) => {
     console.log(`⚠️ Ruta no encontrada: ${req.method} ${req.url}`);
     res.status(404).json({ mensaje: `Ruta no encontrada: ${req.method} ${req.url}` });
   } else {
-    // Si no es una ruta API, responde con un 404 genérico
     res.status(404).json({ mensaje: "Ruta no encontrada" });
   }
 });
@@ -164,7 +139,7 @@ app.use((err, req, res, next) => {
   });
 });
 
-// Iniciar servidor en el puerto asignado por Vercel o 5000 localmente
+// Iniciar servidor
 const PORT = process.env.PORT || 5000;
 app.listen(PORT, () => {
   console.log(`🚀 Servidor corriendo en el puerto ${PORT}`);
