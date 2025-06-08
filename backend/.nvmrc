@@ -1,5 +1,1 @@
-cd C:\FULL_STACK\admin-gimnasios-backend
-echo 18.20.4 > .nvmrc
-git add .nvmrc
-git commit -m "Add .nvmrc to specify Node.js version"
-git push origin main
+18.20.4
