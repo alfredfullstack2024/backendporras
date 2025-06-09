@@ -33,7 +33,7 @@ const app = express();
 // Middleware de CORS
 app.options('*', cors());
 app.use(cors({
-  origin: 'https://admin-gimnasios-frontend-zue1-r0grbzfo1.vercel.app',
+  origin: 'https://admin-gimnasios-frontend-zue1-0vww5pss9.vercel.app', // Actualiza con el nuevo origen
   methods: ['GET', 'POST', 'PUT', 'DELETE', 'OPTIONS'],
   allowedHeaders: ['Content-Type', 'Authorization'],
   credentials: true,
