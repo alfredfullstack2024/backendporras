@@ -18,6 +18,15 @@ const debugRoutes = (prefix, router) => {
   }
 };
 
+// Configuración de CORS
+const corsOptions = {
+  origin: 'https://admin-gimnasios-frontend-zue1-0vww5pss9.vercel.app', // Asegúrate de que sea el origen correcto
+  methods: ['GET', 'POST', 'PUT', 'DELETE', 'OPTIONS'],
+  allowedHeaders: ['Content-Type', 'Authorization'],
+  credentials: true, // Habilita cookies o autenticación
+  optionsSuccessStatus: 200 // Algunos navegadores requieren esto para OPTIONS
+};
+
 // Validar variables de entorno
 if (!process.env.MONGODB_URI) {
   console.error("❌ Error: La variable de entorno MONGODB_URI no está definida. Verifica tu archivo .env o las variables en Render.");
@@ -31,13 +40,8 @@ if (!process.env.JWT_SECRET) {
 const app = express();
 
 // Middleware de CORS
-app.options('*', cors());
-app.use(cors({
-  origin: 'https://admin-gimnasios-frontend-zue1-0vww5pss9.vercel.app', // Actualiza con el nuevo origen
-  methods: ['GET', 'POST', 'PUT', 'DELETE', 'OPTIONS'],
-  allowedHeaders: ['Content-Type', 'Authorization'],
-  credentials: true,
-}));
+app.options('*', cors(corsOptions)); // Manejo de solicitudes OPTIONS
+app.use(cors(corsOptions)); // Aplicar CORS a todas las rutas
 
 app.use(express.json());
 
