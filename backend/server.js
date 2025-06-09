@@ -20,7 +20,7 @@ const debugRoutes = (prefix, router) => {
 
 // Configuración de CORS
 const corsOptions = {
-  origin: 'https://admin-gimnasios-frontend-zue1-6q4sjph0.vercel.app', // Asegúrate de que sea el origen correcto
+  origin: 'https://admin-gimnasios-frontend-zue1.vercel.app', // Asegúrate de que sea el origen correcto
   methods: ['GET', 'POST', 'PUT', 'DELETE', 'OPTIONS'],
   allowedHeaders: ['Content-Type', 'Authorization'],
   credentials: true, // Habilita cookies o autenticación
