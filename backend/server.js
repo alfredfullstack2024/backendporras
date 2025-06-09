@@ -31,10 +31,11 @@ if (!process.env.JWT_SECRET) {
 const app = express();
 
 // Middleware de CORS
+app.options('*', cors());
 app.use(cors({
-  origin: "https://admin-gimnasios-frontend.vercel.app",
-  methods: ["GET", "POST", "PUT", "DELETE", "OPTIONS"],
-  allowedHeaders: ["Content-Type", "Authorization"],
+  origin: 'https://admin-gimnasios-frontend-zue1-r0grbzfo1.vercel.app',
+  methods: ['GET', 'POST', 'PUT', 'DELETE', 'OPTIONS'],
+  allowedHeaders: ['Content-Type', 'Authorization'],
   credentials: true,
 }));
 
@@ -42,7 +43,7 @@ app.use(express.json());
 
 // Middleware para registrar solicitudes
 app.use((req, res, next) => {
-  console.log(`📩 Solicitud recibida: ${req.method} ${req.url}`);
+  console.log(`📩 Solicitud recibida: ${req.method} ${req.url} - ${new Date().toISOString()}`);
   next();
 });
 
