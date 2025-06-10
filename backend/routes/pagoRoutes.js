@@ -6,7 +6,7 @@ const Cliente = require("../models/Cliente");
 const Producto = require("../models/Producto");
 const { protect, verificarPermisos } = require("../middleware/authMiddleware");
 
-// Obtener un pago por ID (protegida)
+// Solo recepcionistas y admins pueden acceder
 router.get(
   "/:id",
   protect,
@@ -38,7 +38,6 @@ router.get(
   }
 );
 
-// Actualizar un pago (protegida)
 router.put(
   "/:id",
   protect,
@@ -78,7 +77,7 @@ router.put(
           });
         }
       } else if (pagoExistente && cantidad > (pagoExistente.cantidad || 0)) {
-        const diferencia = quantity - (pagoExistente.cantidad || 0);
+        const diferencia = cantidad - (pagoExistente.cantidad || 0);
         const productoDoc = await Producto.findById(pagoExistente.producto);
         if (productoDoc && productoDoc.stock < diferencia) {
           return res.status(400).json({
@@ -97,6 +96,7 @@ router.put(
           monto: Number(monto),
           fecha: fechaPago,
           metodoPago,
+          estado: "Completado", // Asegurar estado al actualizar
         },
         { new: true, runValidators: true }
       )
@@ -146,7 +146,6 @@ router.put(
   }
 );
 
-// Listar todos los pagos (protegida)
 router.get(
   "/",
   protect,
@@ -160,13 +159,15 @@ router.get(
         throw new Error("Modelo Pago no está correctamente definido");
       }
 
-      const query = { estado: "Completado" };
+      const query = {};
       if (req.query.fechaInicio && req.query.fechaFin) {
         query.fecha = {
           $gte: new Date(req.query.fechaInicio),
           $lte: new Date(req.query.fechaFin),
         };
       }
+      // Temporalmente sin filtro de estado para verificar todos los pagos
+      // query.estado = "Completado";
 
       const pagos = await Pago.find(query)
         .populate("cliente", "nombre apellido")
@@ -174,10 +175,11 @@ router.get(
         .populate("creadoPor", "nombre")
         .lean();
 
-      const total = pagos.reduce((sum, pago) => sum + (pago.monto || 0), 0);
-
+      console.log("Estados de los pagos:", pagos.map((p) => p.estado));
       console.log("Pagos encontrados:", JSON.stringify(pagos, null, 2));
-      console.log("Total de pagos:", total);
+
+      const total = pagos.reduce((sum, pago) => sum + (pago.monto || 0), 0);
+      console.log("Total calculado:", total);
 
       res.json({ pagos, total });
     } catch (error) {
@@ -191,7 +193,6 @@ router.get(
   }
 );
 
-// Crear un nuevo pago (protegida)
 router.post(
   "/",
   protect,
@@ -246,6 +247,7 @@ router.post(
         fecha: fechaPago,
         metodoPago,
         creadoPor: req.user._id,
+        estado: "Completado", // Asegurar estado al crear
       });
 
       const pagoGuardado = await nuevoPago.save();
@@ -277,7 +279,6 @@ router.post(
   }
 );
 
-// Consultar pagos por número de identificación (protegida)
 router.get(
   "/consultar/:numeroIdentificacion",
   protect,
@@ -329,7 +330,6 @@ router.get(
   }
 );
 
-// Obtener ingresos totales (protegida)
 router.get(
   "/ingresos",
   protect,
