@@ -1,37 +1,39 @@
 const express = require("express");
 const router = express.Router();
-const Clase = require("../models/Clase");
-const { protect } = require("../middleware/authMiddleware");
+const { protect, verificarPermisos } = require("../middleware/authMiddleware");
+const {
+  obtenerClasesDisponibles,
+  registrarClienteEnClase,
+  consultarClasesPorNumeroIdentificacion,
+  obtenerInscritosPorClase,
+  obtenerClases,
+} = require("../controllers/claseController");
 
-// Ruta para listar clases
+// Solo recepcionistas y admins pueden acceder (según permisosPorRol)
 router.get(
-  "/",
+  "/disponibles",
   protect,
-  async (req, res) => {
-    try {
-      const clases = await Clase.find().lean();
-      res.json(clases);
-    } catch (error) {
-      res.status(500).json({ mensaje: "Error al listar las clases", error: error.message });
-    }
-  }
+  verificarPermisos(),
+  obtenerClasesDisponibles
 );
-
-// Ruta para obtener una clase por ID
+router.post(
+  "/registrar",
+  protect,
+  verificarPermisos(),
+  registrarClienteEnClase
+);
 router.get(
-  "/:id",
+  "/consultar/:numeroIdentificacion",
   protect,
-  async (req, res) => {
-    try {
-      const clase = await Clase.findById(req.params.id).lean();
-      if (!clase) {
-        return res.status(404).json({ mensaje: "Clase no encontrada" });
-      }
-      res.json(clase);
-    } catch (error) {
-      res.status(500).json({ mensaje: "Error al obtener la clase", error: error.message });
-    }
-  }
+  verificarPermisos(),
+  consultarClasesPorNumeroIdentificacion
 );
+router.get(
+  "/inscritos",
+  protect,
+  verificarPermisos(),
+  obtenerInscritosPorClase
+);
+router.get("/", protect, verificarPermisos(), obtenerClases);
 
 module.exports = router;
