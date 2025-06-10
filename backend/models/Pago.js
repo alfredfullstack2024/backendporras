@@ -32,6 +32,10 @@ const pagoSchema = new mongoose.Schema({
     ref: "Usuario",
     required: true,
   },
+  estado: {
+    type: String,
+    default: "Completado", // Valor por defecto para nuevos y existentes
+  },
   createdAt: {
     type: Date,
     default: Date.now,
@@ -52,6 +56,14 @@ pagoSchema.pre("save", function (next) {
 pagoSchema.pre("findOneAndUpdate", function (next) {
   this.set({ updatedAt: Date.now() });
   next();
+});
+
+// Script para actualizar pagos existentes (ejecutar manualmente en MongoDB)
+pagoSchema.post("init", function (doc) {
+  if (!doc.estado) {
+    doc.estado = "Completado";
+    doc.save();
+  }
 });
 
 module.exports = mongoose.model("Pago", pagoSchema);
