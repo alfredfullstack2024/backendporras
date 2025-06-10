@@ -1,29 +1,22 @@
 const mongoose = require("mongoose");
 
-const entrenadorSchema = new mongoose.Schema(
-  {
-    nombre: { type: String, required: true },
-    apellido: { type: String, required: true },
-    correo: { type: String, required: true },
-    telefono: { type: String, required: true },
-    especialidad: { type: String, required: true },
-    clases: [
-      {
-        nombreClase: { type: String, required: true },
-        dias: [
-          {
-            dia: { type: String, required: true },
-            horarioInicio: { type: String, required: true },
-            horarioFin: { type: String, required: true },
-          },
-        ],
-        capacidadMaxima: { type: Number, required: true, default: 10 },
-      },
-    ],
-    creadoPor: { type: mongoose.Schema.Types.ObjectId, ref: "User" },
-  },
-  { timestamps: true }
-);
+const entrenadorSchema = new mongoose.Schema({
+  nombre: { type: String, required: true },
+  apellido: { type: String, required: true },
+  correo: { type: String, required: true, unique: true },
+  especialidad: { type: String, required: true },
+  createdAt: { type: Date, default: Date.now },
+  updatedAt: { type: Date, default: Date.now },
+});
 
-// Especificar el nombre de la colección como "entrenadors"
-module.exports = mongoose.model("Entrenador", entrenadorSchema, "entrenadors");
+entrenadorSchema.pre("save", function (next) {
+  this.updatedAt = Date.now();
+  next();
+});
+
+entrenadorSchema.pre("findOneAndUpdate", function (next) {
+  this.set({ updatedAt: Date.now() });
+  next();
+});
+
+module.exports = mongoose.model("Entrenador", entrenadorSchema);
