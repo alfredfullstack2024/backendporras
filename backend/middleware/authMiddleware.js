@@ -96,7 +96,6 @@ const normalizeRoute = (ruta) => {
   console.log("Ruta después de eliminar barra final:", ruta);
 
   const normalized = ruta
-    // Ajustar la regla para consultar rutinas primero para evitar conflictos
     .replace(
       /\/rutinas\/consultarRutinasPorNumeroIdentificacion\/\w+/,
       "/rutinas/consultar/:numeroIdentificacion"
@@ -106,7 +105,7 @@ const normalizeRoute = (ruta) => {
       "/rutinas/consultar/:numeroIdentificacion"
     )
     .replace(/\/rutinas\/asignar\/\w+/, "/rutinas/asignar/:id")
-    .replace(/\/rutinas\/\w+/, "/rutinas/:id") // Esta regla debe ir después de las más específicas
+    .replace(/\/rutinas\/\w+/, "/rutinas/:id")
     .replace(
       /\/clases\/consultar\/\w+/,
       "/clases/consultar/:numeroIdentificacion"
@@ -186,7 +185,7 @@ const verificarPermisos = (rolesPermitidos) => {
   });
 };
 
-// Definición de permisos por rol (solo para referencia, ya no se usa directamente)
+// Definición de permisos por rol
 const permisosPorRol = {
   recepcionista: {
     rutas: {
@@ -206,6 +205,7 @@ const permisosPorRol = {
       "/api/membresias/:id": ["GET", "PUT"],
       "/api/productos": ["GET"],
       "/api/productos/:id": ["GET"],
+      "/api/entrenadores": ["GET", "POST"], // Añadido permiso para crear entrenadores
     },
   },
   entrenador: {
