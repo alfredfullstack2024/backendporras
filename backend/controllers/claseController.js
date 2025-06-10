@@ -18,7 +18,7 @@ exports.obtenerClasesDisponibles = async (req, res) => {
     // Extraer todas las clases activas de los entrenadores
     const clasesDisponibles = entrenadores.flatMap((entrenador) =>
       entrenador.clases
-        .filter((clase) => !clase.estado || clase.estado === "activa") // Filtrar por estado "activa" si existe
+        .filter((clase) => !clase.estado || clase.estado === "activa")
         .map((clase) => ({
           entrenadorId: entrenador._id.toString(),
           entrenadorNombre: entrenador.nombre,
@@ -250,7 +250,7 @@ exports.obtenerInscritosPorClase = async (req, res) => {
   }
 };
 
-// Método existente para listar todas las clases (puede ajustarse si es necesario)
+// Método para listar todas las clases
 exports.obtenerClases = async (req, res) => {
   try {
     console.log("Solicitud GET /api/clases recibida");
