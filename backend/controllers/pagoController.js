@@ -6,8 +6,9 @@ const Producto = require("../models/Producto");
 const listarPagos = async (req, res) => {
   try {
     const { fechaInicio, fechaFin, nombreCliente } = req.query;
-    const query = { estado: "Completado" };
+    let query = {};
 
+    // Si no se especifica estado, buscar todos los pagos (para depuración)
     if (fechaInicio && fechaFin) {
       const start = new Date(fechaInicio);
       const end = new Date(fechaFin);
@@ -15,13 +16,19 @@ const listarPagos = async (req, res) => {
         throw new Error("Fechas inválidas");
       }
       query.fecha = { $gte: start, $lte: end };
+    } else {
+      // Quitar filtro de estado por ahora para verificar todos los pagos
+      // query.estado = "Completado"; // Comentar temporalmente
     }
 
+    console.log("Query enviada a Pago.find:", query);
     let pagos = await Pago.find(query)
       .populate("cliente", "nombre apellido")
       .populate("producto", "nombre precio")
       .populate("creadoPor", "nombre")
       .lean();
+
+    console.log("Pagos encontrados en la base:", pagos.length);
 
     if (nombreCliente) {
       console.log("Filtrando por nombreCliente:", nombreCliente);
@@ -34,6 +41,7 @@ const listarPagos = async (req, res) => {
     }
 
     const total = pagos.reduce((sum, pago) => sum + (pago.monto || 0), 0);
+    console.log("Total calculado:", total);
     res.json({ pagos, total });
   } catch (error) {
     console.error("Error detallado al listar pagos:", error.stack);
@@ -105,7 +113,8 @@ const agregarPago = async (req, res) => {
       monto: Number(monto),
       fecha: fechaPago,
       metodoPago,
-      creadoPor: req.user._id, // Corregido de req.user.id a req.user._id
+      creadoPor: req.user._id,
+      estado: "Completado", // Asegurar que el estado se establezca
     });
     const pagoGuardado = await nuevoPago.save();
 
@@ -157,7 +166,6 @@ const editarPago = async (req, res) => {
           detalle: `Stock disponible: ${productoDoc.stock}, solicitado: ${cantidad}`,
         });
       }
-      // Revertir stock del producto anterior
       if (pagoExistente.producto) {
         const productoAnterior = await Producto.findById(pagoExistente.producto);
         if (productoAnterior) {
@@ -168,7 +176,7 @@ const editarPago = async (req, res) => {
       productoDoc.stock -= cantidad;
       await productoDoc.save();
     } else if (cantidad && cantidad !== pagoExistente.cantidad) {
-      const diferencia = cantidad - (pagoExistente.cantidad || 0);
+      const diferencia = quantity - (pagoExistente.cantidad || 0);
       const productoDoc = await Producto.findById(pagoExistente.producto);
       if (productoDoc && productoDoc.stock < diferencia) {
         return res.status(400).json({
@@ -189,6 +197,7 @@ const editarPago = async (req, res) => {
         monto: Number(monto) || pagoExistente.monto,
         fecha: fechaPago,
         metodoPago: metodoPago || pagoExistente.metodoPago,
+        estado: "Completado", // Asegurar que el estado se mantenga
       },
       { new: true, runValidators: true }
     )
