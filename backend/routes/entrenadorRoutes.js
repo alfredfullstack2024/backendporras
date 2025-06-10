@@ -3,11 +3,10 @@ const router = express.Router();
 const Entrenador = require("../models/Entrenador");
 const { protect, verificarPermisos } = require("../middleware/authMiddleware");
 
-// Ruta para listar entrenadores (solo admin y entrenador)
+// Ruta para listar entrenadores
 router.get(
   "/",
   protect,
-  verificarPermisos(["admin", "entrenador"]),
   async (req, res) => {
     try {
       const entrenadores = await Entrenador.find().lean();
@@ -18,22 +17,41 @@ router.get(
   }
 );
 
-// Ruta para crear un entrenador (solo admin)
-router.post(
-  "/",
+// Ruta para obtener un entrenador por ID
+router.get(
+  "/:id",
   protect,
-  verificarPermisos(["admin"]),
+  async (req, res) => {
+    try {
+      const entrenador = await Entrenador.findById(req.params.id).lean();
+      if (!entrenador) {
+        return res.status(404).json({ mensaje: "Entrenador no encontrado" });
+      }
+      res.json(entrenador);
+    } catch (error) {
+      res.status(500).json({ mensaje: "Error al obtener el entrenador", error: error.message });
+    }
+  }
+);
+
+// Ruta para actualizar un entrenador
+router.put(
+  "/:id",
+  protect,
   async (req, res) => {
     try {
       const { nombre, apellido, correo, especialidad } = req.body;
-      if (!nombre || !apellido || !correo || !especialidad) {
-        return res.status(400).json({ mensaje: "Todos los campos son requeridos" });
+      const entrenador = await Entrenador.findByIdAndUpdate(
+        req.params.id,
+        { nombre, apellido, correo, especialidad, updatedAt: Date.now() },
+        { new: true, runValidators: true }
+      ).lean();
+      if (!entrenador) {
+        return res.status(404).json({ mensaje: "Entrenador no encontrado" });
       }
-      const nuevoEntrenador = new Entrenador({ nombre, apellido, correo, especialidad });
-      const entrenadorGuardado = await nuevoEntrenador.save();
-      res.status(201).json(entrenadorGuardado);
+      res.json(entrenador);
     } catch (error) {
-      res.status(500).json({ mensaje: "Error al crear el entrenador", error: error.message });
+      res.status(500).json({ mensaje: "Error al actualizar el entrenador", error: error.message });
     }
   }
 );
