@@ -1,5 +1,6 @@
 const Pago = require("../models/Pago");
 const Cliente = require("../models/Cliente");
+const Producto = require("../models/Producto");
 
 // Listar todos los pagos (protegida)
 const listarPagos = async (req, res) => {
@@ -22,8 +23,8 @@ const listarPagos = async (req, res) => {
       .populate("creadoPor", "nombre")
       .lean();
 
-    // Filtrar por nombre completo del cliente si se proporciona
-  if (nombreCliente) {
+    if (nombreCliente) {
+      console.log("Filtrando por nombreCliente:", nombreCliente);
       pagos = pagos.filter((pago) => {
         const nombreCompleto = `${pago.cliente?.nombre || ""} ${
           pago.cliente?.apellido || ""
@@ -32,10 +33,10 @@ const listarPagos = async (req, res) => {
       });
     }
 
-    const total = pagos.reduce((sum, pago) => sum + pago.monto, 0);
+    const total = pagos.reduce((sum, pago) => sum + (pago.monto || 0), 0);
     res.json({ pagos, total });
   } catch (error) {
-    console.error("Error detallado:", error);
+    console.error("Error detallado al listar pagos:", error.stack);
     res.status(500).json({ mensaje: "Error al listar pagos", error: error.message });
   }
 };
@@ -45,19 +46,18 @@ const consultarPagosPorCedula = async (req, res) => {
   try {
     const { numeroIdentificacion } = req.params;
 
-    // Buscar cliente por número de identificación
     const cliente = await Cliente.findOne({ numeroIdentificacion });
     if (!cliente) {
       return res.status(404).json({ mensaje: "Cliente no encontrado" });
     }
 
-    // Buscar pagos asociados a ese cliente
     const pagos = await Pago.find({ cliente: cliente._id })
       .populate("cliente", "nombre apellido")
-      .populate("producto", "nombre precio");
+      .populate("producto", "nombre precio")
+      .lean();
     res.json(pagos);
   } catch (error) {
-    res.status(500).json({ mensaje: "Error al consultar pagos", error });
+    res.status(500).json({ mensaje: "Error al consultar pagos", error: error.message });
   }
 };
 
@@ -65,19 +65,54 @@ const consultarPagosPorCedula = async (req, res) => {
 const agregarPago = async (req, res) => {
   try {
     const { cliente, producto, cantidad, monto, fecha, metodoPago } = req.body;
+
+    if (!cliente || !producto || !cantidad || !monto || !fecha || !metodoPago) {
+      return res.status(400).json({
+        mensaje: "Faltan campos requeridos",
+        detalle: "cliente, producto, cantidad, monto, fecha y metodoPago son obligatorios",
+      });
+    }
+
+    const fechaPago = new Date(fecha);
+    if (isNaN(fechaPago.getTime())) {
+      return res.status(400).json({ mensaje: "Fecha inválida" });
+    }
+
+    const clienteDoc = await Cliente.findById(cliente);
+    if (!clienteDoc) {
+      return res.status(404).json({ mensaje: "Cliente no encontrado" });
+    }
+
+    const productoDoc = await Producto.findById(producto);
+    if (!productoDoc) {
+      return res.status(404).json({ mensaje: "Producto no encontrado" });
+    }
+
+    if (productoDoc.stock < cantidad) {
+      return res.status(400).json({
+        mensaje: "Stock insuficiente",
+        detalle: `Stock disponible: ${productoDoc.stock}, solicitado: ${cantidad}`,
+      });
+    }
+
+    productoDoc.stock -= cantidad;
+    await productoDoc.save();
+
     const nuevoPago = new Pago({
       cliente,
       producto,
-      cantidad,
-      monto,
-      fecha,
+      cantidad: Number(cantidad),
+      monto: Number(monto),
+      fecha: fechaPago,
       metodoPago,
-      creadoPor: req.user.id,
+      creadoPor: req.user._id, // Corregido de req.user.id a req.user._id
     });
-    await nuevoPago.save();
-    res.status(201).json({ mensaje: "Pago creado con éxito", pago: nuevoPago });
+    const pagoGuardado = await nuevoPago.save();
+
+    res.status(201).json({ mensaje: "Pago creado con éxito", pago: pagoGuardado });
   } catch (error) {
-    res.status(500).json({ mensaje: "Error al crear pago", error });
+    console.error("Error detallado al crear pago:", error.stack);
+    res.status(500).json({ mensaje: "Error al crear pago", error: error.message });
   }
 };
 
@@ -87,13 +122,14 @@ const obtenerPagoPorId = async (req, res) => {
     const pago = await Pago.findById(req.params.id)
       .populate("cliente", "nombre apellido")
       .populate("producto", "nombre precio")
-      .populate("creadoPor", "nombre");
+      .populate("creadoPor", "nombre")
+      .lean();
     if (!pago) {
       return res.status(404).json({ mensaje: "Pago no encontrado" });
     }
     res.json(pago);
   } catch (error) {
-    res.status(500).json({ mensaje: "Error al obtener pago", error });
+    res.status(500).json({ mensaje: "Error al obtener pago", error: error.message });
   }
 };
 
@@ -101,30 +137,92 @@ const obtenerPagoPorId = async (req, res) => {
 const editarPago = async (req, res) => {
   try {
     const { cliente, producto, cantidad, monto, fecha, metodoPago } = req.body;
-    const pago = await Pago.findByIdAndUpdate(
-      req.params.id,
-      { cliente, producto, cantidad, monto, fecha, metodoPago },
-      { new: true }
-    );
-    if (!pago) {
+    const pagoExistente = await Pago.findById(req.params.id).populate("producto", "stock");
+
+    if (!pagoExistente) {
       return res.status(404).json({ mensaje: "Pago no encontrado" });
     }
-    res.json({ mensaje: "Pago actualizado con éxito", pago });
+
+    const fechaPago = new Date(fecha);
+    if (isNaN(fechaPago.getTime())) {
+      return res.status(400).json({ mensaje: "Fecha inválida" });
+    }
+
+    if (producto && producto !== pagoExistente.producto?.toString()) {
+      const productoDoc = await Producto.findById(producto);
+      if (!productoDoc) return res.status(404).json({ mensaje: "Producto no encontrado" });
+      if (productoDoc.stock < cantidad) {
+        return res.status(400).json({
+          mensaje: "Stock insuficiente",
+          detalle: `Stock disponible: ${productoDoc.stock}, solicitado: ${cantidad}`,
+        });
+      }
+      // Revertir stock del producto anterior
+      if (pagoExistente.producto) {
+        const productoAnterior = await Producto.findById(pagoExistente.producto);
+        if (productoAnterior) {
+          productoAnterior.stock += pagoExistente.cantidad || 0;
+          await productoAnterior.save();
+        }
+      }
+      productoDoc.stock -= cantidad;
+      await productoDoc.save();
+    } else if (cantidad && cantidad !== pagoExistente.cantidad) {
+      const diferencia = cantidad - (pagoExistente.cantidad || 0);
+      const productoDoc = await Producto.findById(pagoExistente.producto);
+      if (productoDoc && productoDoc.stock < diferencia) {
+        return res.status(400).json({
+          mensaje: "Stock insuficiente",
+          detalle: `Stock disponible: ${productoDoc.stock}, diferencia requerida: ${diferencia}`,
+        });
+      }
+      productoDoc.stock -= diferencia;
+      await productoDoc.save();
+    }
+
+    const pagoActualizado = await Pago.findByIdAndUpdate(
+      req.params.id,
+      {
+        cliente: cliente || pagoExistente.cliente,
+        producto: producto || pagoExistente.producto,
+        cantidad: Number(cantidad) || pagoExistente.cantidad,
+        monto: Number(monto) || pagoExistente.monto,
+        fecha: fechaPago,
+        metodoPago: metodoPago || pagoExistente.metodoPago,
+      },
+      { new: true, runValidators: true }
+    )
+      .populate("cliente", "nombre apellido")
+      .populate("producto", "nombre precio")
+      .populate("creadoPor", "nombre")
+      .lean();
+
+    res.json({ mensaje: "Pago actualizado con éxito", pago: pagoActualizado });
   } catch (error) {
-    res.status(500).json({ mensaje: "Error al actualizar pago", error });
+    res.status(500).json({ mensaje: "Error al actualizar pago", error: error.message });
   }
 };
 
 // Eliminar un pago (protegida)
 const eliminarPago = async (req, res) => {
   try {
-    const pago = await Pago.findByIdAndDelete(req.params.id);
+    const pago = await Pago.findById(req.params.id).populate("producto");
     if (!pago) {
       return res.status(404).json({ mensaje: "Pago no encontrado" });
     }
+
+    if (pago.producto) {
+      const productoDoc = await Producto.findById(pago.producto);
+      if (productoDoc) {
+        productoDoc.stock += pago.cantidad || 0;
+        await productoDoc.save();
+      }
+    }
+
+    await Pago.findByIdAndDelete(req.params.id);
     res.json({ mensaje: "Pago eliminado con éxito" });
   } catch (error) {
-    res.status(500).json({ mensaje: "Error al eliminar pago", error });
+    res.status(500).json({ mensaje: "Error al eliminar pago", error: error.message });
   }
 };
 
@@ -132,7 +230,7 @@ const eliminarPago = async (req, res) => {
 const obtenerIngresos = async (req, res) => {
   try {
     const { fechaInicio, fechaFin } = req.query;
-    const query = { estado: "Completado" }; // Filtrar solo pagos completados
+    const query = { estado: "Completado" };
 
     if (fechaInicio && fechaFin) {
       query.fecha = {
@@ -142,11 +240,11 @@ const obtenerIngresos = async (req, res) => {
     }
 
     const pagos = await Pago.find(query).lean();
-    const totalIngresos = pagos.reduce((sum, pago) => sum + pago.monto, 0);
+    const totalIngresos = pagos.reduce((sum, pago) => sum + (pago.monto || 0), 0);
 
     res.json({ ingresos: totalIngresos, detalles: pagos });
   } catch (error) {
-    res.status(500).json({ mensaje: "Error al calcular ingresos", error });
+    res.status(500).json({ mensaje: "Error al calcular ingresos", error: error.message });
   }
 };
 
