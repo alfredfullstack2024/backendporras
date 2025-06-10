@@ -5,23 +5,25 @@ const Cliente = require("../models/Cliente");
 const listarPagos = async (req, res) => {
   try {
     const { fechaInicio, fechaFin, nombreCliente } = req.query;
-    const query = { estado: "Completado" }; // Filtrar solo pagos completados
+    const query = { estado: "Completado" };
 
     if (fechaInicio && fechaFin) {
-      query.fecha = {
-        $gte: new Date(fechaInicio),
-        $lte: new Date(fechaFin),
-      };
+      const start = new Date(fechaInicio);
+      const end = new Date(fechaFin);
+      if (isNaN(start) || isNaN(end)) {
+        throw new Error("Fechas inválidas");
+      }
+      query.fecha = { $gte: start, $lte: end };
     }
 
     let pagos = await Pago.find(query)
       .populate("cliente", "nombre apellido")
       .populate("producto", "nombre precio")
-      .populate("creadoPor", "nombre");
+      .populate("creadoPor", "nombre")
+      .lean();
 
     // Filtrar por nombre completo del cliente si se proporciona
-    if (nombreCliente) {
-      console.log("Filtrando por nombreCliente:", nombreCliente);
+  if (nombreCliente) {
       pagos = pagos.filter((pago) => {
         const nombreCompleto = `${pago.cliente?.nombre || ""} ${
           pago.cliente?.apellido || ""
@@ -31,10 +33,10 @@ const listarPagos = async (req, res) => {
     }
 
     const total = pagos.reduce((sum, pago) => sum + pago.monto, 0);
-
     res.json({ pagos, total });
   } catch (error) {
-    res.status(500).json({ mensaje: "Error al listar pagos", error });
+    console.error("Error detallado:", error);
+    res.status(500).json({ mensaje: "Error al listar pagos", error: error.message });
   }
 };
 
