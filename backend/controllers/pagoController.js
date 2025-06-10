@@ -6,9 +6,8 @@ const Producto = require("../models/Producto");
 const listarPagos = async (req, res) => {
   try {
     const { fechaInicio, fechaFin, nombreCliente } = req.query;
-    let query = {};
+    const query = { estado: "Completado" }; // Restaurar filtro de estado
 
-    // Si no se especifica estado, buscar todos los pagos (para depuración)
     if (fechaInicio && fechaFin) {
       const start = new Date(fechaInicio);
       const end = new Date(fechaFin);
@@ -16,9 +15,6 @@ const listarPagos = async (req, res) => {
         throw new Error("Fechas inválidas");
       }
       query.fecha = { $gte: start, $lte: end };
-    } else {
-      // Quitar filtro de estado por ahora para verificar todos los pagos
-      // query.estado = "Completado"; // Comentar temporalmente
     }
 
     console.log("Query enviada a Pago.find:", query);
@@ -114,7 +110,7 @@ const agregarPago = async (req, res) => {
       fecha: fechaPago,
       metodoPago,
       creadoPor: req.user._id,
-      estado: "Completado", // Asegurar que el estado se establezca
+      estado: "Completado", // Asegurar que se establezca el estado
     });
     const pagoGuardado = await nuevoPago.save();
 
@@ -176,7 +172,7 @@ const editarPago = async (req, res) => {
       productoDoc.stock -= cantidad;
       await productoDoc.save();
     } else if (cantidad && cantidad !== pagoExistente.cantidad) {
-      const diferencia = quantity - (pagoExistente.cantidad || 0);
+      const diferencia = cantidad - (pagoExistente.cantidad || 0);
       const productoDoc = await Producto.findById(pagoExistente.producto);
       if (productoDoc && productoDoc.stock < diferencia) {
         return res.status(400).json({
