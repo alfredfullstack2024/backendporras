@@ -102,7 +102,7 @@ const obtenerEntrenadorPorId = async (req, res) => {
 const editarEntrenador = async (req, res) => {
   try {
     console.log("Iniciando editarEntrenador...");
-    console.log("Datos recibidos para editar:", req.body); // Log adicional
+    console.log("Datos recibidos para editar:", req.body);
     const {
       nombre,
       apellido,
