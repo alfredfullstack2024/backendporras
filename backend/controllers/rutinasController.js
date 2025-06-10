@@ -22,14 +22,13 @@ exports.crearRutina = asyncHandler(async (req, res) => {
     });
   }
 
-  // Validar que req.user exista (solo una vez, después de los logs)
+  // Validar que req.user exista
   console.log("Creando rutina - Paso 3: Verificando usuario:", req.user);
   console.log(
     "Creando rutina - Paso 3.5: Estado final de req.user antes de validación:",
     req.user
-  ); // Nuevo log
+  );
   if (!req.user || !req.user._id) {
-    // Cambiado de req.user.id a req.user._id
     console.log(
       "Error: Usuario no autenticado o ID no disponible - Detalle:",
       req.user
@@ -42,14 +41,14 @@ exports.crearRutina = asyncHandler(async (req, res) => {
   console.log(
     "Creando rutina - Paso 4: Preparando nueva rutina con creadoPor:",
     req.user._id
-  ); // Cambiado a req.user._id
+  );
   const nuevaRutina = new Rutina({
     grupoMuscular,
     nombreEjercicio,
     series,
     repeticiones,
     descripcion,
-    creadoPor: req.user._id, // Cambiado a req.user._id
+    creadoPor: req.user._id,
   });
 
   console.log(
@@ -95,7 +94,6 @@ exports.actualizarRutina = asyncHandler(async (req, res) => {
 
   // Validar que req.user exista
   if (!req.user || !req.user._id) {
-    // Cambiado de req.user.id a req.user._id
     return res.status(401).json({
       mensaje: "No autorizado: Usuario no autenticado o ID no disponible",
     });
@@ -109,7 +107,7 @@ exports.actualizarRutina = asyncHandler(async (req, res) => {
       series,
       repeticiones,
       descripcion,
-      creadoPor: req.user._id, // Cambiado a req.user._id
+      creadoPor: req.user._id,
     },
     { new: true }
   );
@@ -140,7 +138,6 @@ exports.asignarRutina = asyncHandler(async (req, res) => {
 
   // Validar que req.user exista
   if (!req.user || !req.user._id) {
-    // Cambiado de req.user.id a req.user._id
     return res.status(401).json({
       mensaje: "No autorizado: Usuario no autenticado o ID no disponible",
     });
@@ -164,7 +161,7 @@ exports.asignarRutina = asyncHandler(async (req, res) => {
       ? diasEntrenamiento
       : [],
     diasDescanso: Array.isArray(diasDescanso) ? diasDescanso : [],
-    asignadaPor: req.user._id, // Cambiado a req.user._id
+    asignadaPor: req.user._id,
   });
 
   const asignacionCreada = await rutinaAsignada.save();
@@ -192,7 +189,6 @@ exports.actualizarAsignacionRutina = asyncHandler(async (req, res) => {
 
   // Validar que req.user exista
   if (!req.user || !req.user._id) {
-    // Cambiado de req.user.id a req.user._id
     return res.status(401).json({
       mensaje: "No autorizado: Usuario no autenticado o ID no disponible",
     });
@@ -207,7 +203,7 @@ exports.actualizarAsignacionRutina = asyncHandler(async (req, res) => {
         ? diasEntrenamiento
         : [],
       diasDescanso: Array.isArray(diasDescanso) ? diasDescanso : [],
-      asignadaPor: req.user._id, // Cambiado a req.user._id
+      asignadaPor: req.user._id,
     },
     { new: true }
   );
