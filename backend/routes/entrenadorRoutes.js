@@ -1,40 +1,40 @@
 const express = require("express");
 const router = express.Router();
-const entrenadorController = require("../controllers/entrenadoresController");
-const { protect, verificarPermisos } = require("../middleware/authMiddleware");
+const Entrenador = require("../models/Entrenador");
+const { protect } = require("../middleware/authMiddleware");
 
-console.log("Configurando rutas para entrenadores...");
+router.get("/", protect, async (req, res) => {
+  try {
+    const entrenadores = await Entrenador.find().lean();
+    res.json(entrenadores);
+  } catch (error) {
+    res.status(500).json({ mensaje: "Error al listar entrenadores", error: error.message });
+  }
+});
 
-// Rutas protegidas con permisos basados en authMiddleware.js
-router.get(
-  "/",
-  protect,
-  verificarPermisos(["admin", "entrenador"]), // Solo admin o entrenador pueden listar
-  entrenadorController.listarEntrenadores
-);
-router.post(
-  "/",
-  protect,
-  verificarPermisos(["admin"]), // Solo admin puede agregar
-  entrenadorController.agregarEntrenador
-);
-router.get(
-  "/:id",
-  protect,
-  verificarPermisos(["admin", "entrenador"]), // Solo admin o entrenador pueden ver detalles
-  entrenadorController.obtenerEntrenadorPorId
-);
-router.put(
-  "/:id",
-  protect,
-  verificarPermisos(["admin"]), // Solo admin puede editar
-  entrenadorController.editarEntrenador
-);
-router.delete(
-  "/:id",
-  protect,
-  verificarPermisos(["admin"]), // Solo admin puede eliminar
-  entrenadorController.eliminarEntrenador
-);
+router.get("/:id", protect, async (req, res) => {
+  try {
+    const entrenador = await Entrenador.findById(req.params.id).lean();
+    if (!entrenador) return res.status(404).json({ mensaje: "Entrenador no encontrado" });
+    res.json(entrenador);
+  } catch (error) {
+    res.status(500).json({ mensaje: "Error al obtener entrenador", error: error.message });
+  }
+});
+
+router.put("/:id", protect, async (req, res) => {
+  try {
+    const { nombre, apellido, correo, telefono, especialidad } = req.body;
+    const entrenador = await Entrenador.findByIdAndUpdate(
+      req.params.id,
+      { nombre, apellido, correo, telefono, especialidad },
+      { new: true, runValidators: true }
+    ).lean();
+    if (!entrenador) return res.status(404).json({ mensaje: "Entrenador no encontrado" });
+    res.json(entrenador);
+  } catch (error) {
+    res.status(400).json({ mensaje: "Error al actualizar entrenador", error: error.message });
+  }
+});
 
 module.exports = router;
