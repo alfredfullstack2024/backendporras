@@ -15,21 +15,35 @@ exports.obtenerClasesDisponibles = async (req, res) => {
         .json({ message: "No se encontraron clases disponibles." });
     }
 
-    // Extraer todas las clases activas de los entrenadores
-    const clasesDisponibles = entrenadores.flatMap((entrenador) =>
-      entrenador.clases
-        .filter((clase) => !clase.estado || clase.estado === "activa")
-        .map((clase) => ({
-          entrenadorId: entrenador._id.toString(),
-          entrenadorNombre: entrenador.nombre,
-          especialidad: entrenador.especialidad,
-          nombreClase: clase.nombreClase,
-          dia: clase.dias[0]?.dia || "No especificado",
-          horarioInicio: clase.dias[0]?.horarioInicio || "No especificado",
-          horarioFin: clase.dias[0]?.horarioFin || "No especificado",
-          capacidadMaxima: clase.capacidadMaxima,
-        }))
-    );
+    const clasesDisponibles = entrenadores
+      .flatMap((entrenador) => {
+        // Verificar si 'clases' existe y es un array
+        if (!entrenador.clases || !Array.isArray(entrenador.clases)) {
+          console.log(
+            `Entrenador ${entrenador._id} no tiene clases definidas.`
+          );
+          return [];
+        }
+        return entrenador.clases
+          .filter((clase) => !clase.estado || clase.estado === "activa")
+          .map((clase) => {
+            const primerDia =
+              Array.isArray(clase.dias) && clase.dias.length > 0
+                ? clase.dias[0]
+                : null;
+            return {
+              entrenadorId: entrenador._id.toString(),
+              entrenadorNombre: entrenador.nombre,
+              especialidad: entrenador.especialidad,
+              nombreClase: clase.nombreClase,
+              dia: primerDia?.dia || "No especificado",
+              horarioInicio: primerDia?.horarioInicio || "No especificado",
+              horarioFin: primerDia?.horarioFin || "No especificado",
+              capacidadMaxima: clase.capacidadMaxima,
+            };
+          });
+      })
+      .filter((clase) => clase !== undefined); // Filtrar cualquier valor undefined
 
     if (clasesDisponibles.length === 0) {
       console.log("No se encontraron clases activas en los entrenadores.");
@@ -250,7 +264,6 @@ exports.obtenerInscritosPorClase = async (req, res) => {
   }
 };
 
-// Método para listar todas las clases
 exports.obtenerClases = async (req, res) => {
   try {
     console.log("Solicitud GET /api/clases recibida");
@@ -262,12 +275,14 @@ exports.obtenerClases = async (req, res) => {
     }
 
     const todasLasClases = entrenadores.flatMap((entrenador) =>
-      entrenador.clases.map((clase) => ({
-        ...clase,
-        entrenadorId: entrenador._id.toString(),
-        entrenadorNombre: entrenador.nombre,
-        especialidad: entrenador.especialidad,
-      }))
+      entrenador.clases
+        ? entrenador.clases.map((clase) => ({
+            ...clase,
+            entrenadorId: entrenador._id.toString(),
+            entrenadorNombre: entrenador.nombre,
+            especialidad: entrenador.especialidad,
+          }))
+        : []
     );
 
     if (todasLasClases.length === 0) {
