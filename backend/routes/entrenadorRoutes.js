@@ -37,4 +37,15 @@ router.put("/:id", protect, async (req, res) => {
   }
 });
 
+router.post("/", protect, async (req, res) => {
+  try {
+    const { nombre, apellido, correo, telefono, especialidad } = req.body;
+    const nuevoEntrenador = new Entrenador({ nombre, apellido, correo, telefono, especialidad });
+    const entrenadorGuardado = await nuevoEntrenador.save();
+    res.status(201).json(entrenadorGuardado);
+  } catch (error) {
+    res.status(400).json({ mensaje: "Error al crear entrenador", error: error.message });
+  }
+});
+
 module.exports = router;
