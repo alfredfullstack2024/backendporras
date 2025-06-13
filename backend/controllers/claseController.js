@@ -17,20 +17,14 @@ exports.obtenerClasesDisponibles = async (req, res) => {
 
     const clasesDisponibles = entrenadores
       .flatMap((entrenador) => {
-        // Verificar si 'clases' existe y es un array
         if (!entrenador.clases || !Array.isArray(entrenador.clases)) {
-          console.log(
-            `Entrenador ${entrenador._id} no tiene clases definidas.`
-          );
+          console.log(`Entrenador ${entrenador._id} no tiene clases definidas.`);
           return [];
         }
         return entrenador.clases
           .filter((clase) => !clase.estado || clase.estado === "activa")
           .map((clase) => {
-            const primerDia =
-              Array.isArray(clase.dias) && clase.dias.length > 0
-                ? clase.dias[0]
-                : null;
+            const primerDia = Array.isArray(clase.dias) && clase.dias.length > 0 ? clase.dias[0] : null;
             return {
               entrenadorId: entrenador._id.toString(),
               entrenadorNombre: entrenador.nombre,
@@ -43,7 +37,7 @@ exports.obtenerClasesDisponibles = async (req, res) => {
             };
           });
       })
-      .filter((clase) => clase !== undefined); // Filtrar cualquier valor undefined
+      .filter((clase) => clase !== undefined);
 
     if (clasesDisponibles.length === 0) {
       console.log("No se encontraron clases activas en los entrenadores.");
@@ -89,17 +83,23 @@ exports.registrarClienteEnClase = async (req, res) => {
       });
     }
 
+    console.log("Buscando cliente con numeroIdentificacion:", numeroIdentificacion);
     const cliente = await Cliente.findOne({ numeroIdentificacion });
     if (!cliente) {
+      console.log("Cliente no encontrado:", numeroIdentificacion);
       return res
         .status(404)
         .json({ message: "Número de identificación no encontrado." });
     }
+    console.log("Cliente encontrado:", cliente._id);
 
+    console.log("Buscando entrenador con entrenadorId:", entrenadorId);
     const entrenador = await Entrenador.findById(entrenadorId);
     if (!entrenador) {
+      console.log("Entrenador no encontrado:", entrenadorId);
       return res.status(404).json({ message: "Entrenador no encontrado." });
     }
+    console.log("Entrenador encontrado:", entrenador._id);
 
     const clase = entrenador.clases.find(
       (c) =>
@@ -112,6 +112,7 @@ exports.registrarClienteEnClase = async (req, res) => {
         )
     );
     if (!clase) {
+      console.log("Clase no encontrada:", { nombreClase, dia, horarioInicio, horarioFin });
       return res
         .status(404)
         .json({ message: "Clase no encontrada en el entrenador." });
@@ -124,11 +125,13 @@ exports.registrarClienteEnClase = async (req, res) => {
         d.horarioFin === horarioFin
     );
     if (!diaClase) {
+      console.log("Día y horario no encontrados:", { dia, horarioInicio, horarioFin });
       return res
         .status(404)
         .json({ message: "Día y horario no encontrados para esta clase." });
     }
 
+    console.log("Contando registros existentes:", { entrenadorId, nombreClase, dia, horarioInicio, horarioFin });
     const registros = await RegistroClases.find({
       entrenadorId,
       nombreClase,
@@ -137,6 +140,7 @@ exports.registrarClienteEnClase = async (req, res) => {
       horarioFin,
     });
     if (registros.length >= clase.capacidadMaxima) {
+      console.log("Capacidad máxima alcanzada:", clase.capacidadMaxima);
       return res
         .status(400)
         .json({ message: "Capacidad máxima de la clase alcanzada." });
@@ -152,6 +156,7 @@ exports.registrarClienteEnClase = async (req, res) => {
       horarioInicio,
       horarioFin,
     });
+    console.log("Guardando nuevo registro:", registro);
     const nuevoRegistro = await registro.save();
 
     console.log("Cliente registrado en clase:", nuevoRegistro);
@@ -160,9 +165,9 @@ exports.registrarClienteEnClase = async (req, res) => {
       registro: nuevoRegistro,
     });
   } catch (error) {
-    console.error("Error al registrar cliente en clase:", error.message);
+    console.error("Error al registrar cliente en clase:", error.stack);
     res.status(500).json({
-      message: "Error al registrar cliente en clase",
+      message: "Error interno del servidor al registrar cliente en clase",
       error: error.message,
     });
   }
