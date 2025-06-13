@@ -68,8 +68,9 @@ exports.registrarClienteEnClase = async (req, res) => {
       horarioFin,
     } = req.body;
 
-    console.log("Datos recibidos para registrar:", req.body);
+    console.log("🚀 [REGISTRO] Datos recibidos para registrar:", req.body);
 
+    // Validación de campos
     if (
       !numeroIdentificacion ||
       !entrenadorId ||
@@ -78,28 +79,47 @@ exports.registrarClienteEnClase = async (req, res) => {
       !horarioInicio ||
       !horarioFin
     ) {
+      console.log("❌ [REGISTRO] Faltan campos requeridos:", {
+        numeroIdentificacion,
+        entrenadorId,
+        nombreClase,
+        dia,
+        horarioInicio,
+        horarioFin,
+      });
       return res.status(400).json({
         message: "Todos los campos son requeridos.",
       });
     }
+    console.log("✅ [REGISTRO] Todos los campos están presentes.");
 
-    console.log("Buscando cliente con numeroIdentificacion:", numeroIdentificacion);
+    // Buscar cliente
+    console.log("🔍 [REGISTRO] Buscando cliente con numeroIdentificacion:", numeroIdentificacion);
     const cliente = await Cliente.findOne({ numeroIdentificacion });
     if (!cliente) {
-      console.log("Cliente no encontrado:", numeroIdentificacion);
+      console.log("❌ [REGISTRO] Cliente no encontrado:", numeroIdentificacion);
       return res
         .status(404)
         .json({ message: "Número de identificación no encontrado." });
     }
-    console.log("Cliente encontrado:", cliente._id);
+    console.log("✅ [REGISTRO] Cliente encontrado:", cliente._id);
 
-    console.log("Buscando entrenador con entrenadorId:", entrenadorId);
+    // Buscar entrenador
+    console.log("🔍 [REGISTRO] Buscando entrenador con entrenadorId:", entrenadorId);
     const entrenador = await Entrenador.findById(entrenadorId);
     if (!entrenador) {
-      console.log("Entrenador no encontrado:", entrenadorId);
+      console.log("❌ [REGISTRO] Entrenador no encontrado:", entrenadorId);
       return res.status(404).json({ message: "Entrenador no encontrado." });
     }
-    console.log("Entrenador encontrado:", entrenador._id);
+    console.log("✅ [REGISTRO] Entrenador encontrado:", entrenador._id);
+
+    // Verificar y buscar clase
+    console.log("🔍 [REGISTRO] Verificando clases del entrenador:", entrenador.clases);
+    if (!entrenador.clases || !Array.isArray(entrenador.clases)) {
+      console.log("❌ [REGISTRO] El entrenador no tiene clases definidas:", entrenador._id);
+      return res.status(404).json({ message: "El entrenador no tiene clases definidas." });
+    }
+    console.log("✅ [REGISTRO] Clases del entrenador verificadas.");
 
     const clase = entrenador.clases.find(
       (c) =>
@@ -112,12 +132,14 @@ exports.registrarClienteEnClase = async (req, res) => {
         )
     );
     if (!clase) {
-      console.log("Clase no encontrada:", { nombreClase, dia, horarioInicio, horarioFin });
+      console.log("❌ [REGISTRO] Clase no encontrada:", { nombreClase, dia, horarioInicio, horarioFin });
       return res
         .status(404)
         .json({ message: "Clase no encontrada en el entrenador." });
     }
+    console.log("✅ [REGISTRO] Clase encontrada:", clase.nombreClase);
 
+    // Buscar día específico
     const diaClase = clase.dias.find(
       (d) =>
         d.dia === dia &&
@@ -125,13 +147,15 @@ exports.registrarClienteEnClase = async (req, res) => {
         d.horarioFin === horarioFin
     );
     if (!diaClase) {
-      console.log("Día y horario no encontrados:", { dia, horarioInicio, horarioFin });
+      console.log("❌ [REGISTRO] Día y horario no encontrados:", { dia, horarioInicio, horarioFin });
       return res
         .status(404)
         .json({ message: "Día y horario no encontrados para esta clase." });
     }
+    console.log("✅ [REGISTRO] Día y horario encontrados.");
 
-    console.log("Contando registros existentes:", { entrenadorId, nombreClase, dia, horarioInicio, horarioFin });
+    // Verificar capacidad
+    console.log("🔍 [REGISTRO] Contando registros existentes:", { entrenadorId, nombreClase, dia, horarioInicio, horarioFin });
     const registros = await RegistroClases.find({
       entrenadorId,
       nombreClase,
@@ -140,12 +164,24 @@ exports.registrarClienteEnClase = async (req, res) => {
       horarioFin,
     });
     if (registros.length >= clase.capacidadMaxima) {
-      console.log("Capacidad máxima alcanzada:", clase.capacidadMaxima);
+      console.log("❌ [REGISTRO] Capacidad máxima alcanzada:", clase.capacidadMaxima);
       return res
         .status(400)
         .json({ message: "Capacidad máxima de la clase alcanzada." });
     }
+    console.log("✅ [REGISTRO] Capacidad disponible:", clase.capacidadMaxima - registros.length);
 
+    // Crear y guardar registro
+    console.log("💾 [REGISTRO] Creando nuevo registro:", {
+      numeroIdentificacion,
+      nombre: cliente.nombre,
+      apellido: cliente.apellido,
+      entrenadorId,
+      nombreClase,
+      dia,
+      horarioInicio,
+      horarioFin,
+    });
     const registro = new RegistroClases({
       numeroIdentificacion,
       nombre: cliente.nombre,
@@ -156,16 +192,15 @@ exports.registrarClienteEnClase = async (req, res) => {
       horarioInicio,
       horarioFin,
     });
-    console.log("Guardando nuevo registro:", registro);
     const nuevoRegistro = await registro.save();
+    console.log("✅ [REGISTRO] Registro guardado:", nuevoRegistro._id);
 
-    console.log("Cliente registrado en clase:", nuevoRegistro);
     res.status(201).json({
       message: "Cliente registrado en clase con éxito",
       registro: nuevoRegistro,
     });
   } catch (error) {
-    console.error("Error al registrar cliente en clase:", error.stack);
+    console.error("❌ [REGISTRO] Error al registrar cliente en clase:", error.stack);
     res.status(500).json({
       message: "Error interno del servidor al registrar cliente en clase",
       error: error.message,
