@@ -24,15 +24,7 @@ const agregarEntrenador = async (req, res) => {
     console.log("Datos recibidos:", req.body);
     console.log("Usuario autenticado:", req.user);
 
-    const {
-      nombre,
-      apellido,
-      correo,
-      telefono,
-      especialidad,
-      clases,
-      horarios,
-    } = req.body;
+    const { nombre, apellido, correo, telefono, especialidad, clases } = req.body;
 
     if (!nombre || !apellido || !correo) {
       return res
@@ -44,24 +36,13 @@ const agregarEntrenador = async (req, res) => {
       return res.status(401).json({ mensaje: "Usuario no autenticado" });
     }
 
-    // Transformar horarios a clases si se envía horarios pero no clases
-    let clasesFinales = clases || [];
-    if (horarios && Array.isArray(horarios) && !clases) {
-      console.log("Transformando horarios a clases...");
-      clasesFinales = horarios.map((horario) => ({
-        nombreClase: "Entrenamiento General",
-        dias: Array.isArray(horario) ? horario : [horario],
-        capacidadMaxima: 10,
-      }));
-    }
-
     const entrenador = new Entrenador({
       nombre,
       apellido,
       correo,
       telefono,
       especialidad,
-      clases: clasesFinales,
+      clases: clases || [{ nombreClase: "", dias: [], capacidadMaxima: 10 }],
       creadoPor: req.user._id,
     });
 
@@ -103,31 +84,12 @@ const editarEntrenador = async (req, res) => {
   try {
     console.log("Iniciando editarEntrenador...");
     console.log("Datos recibidos para editar:", req.body);
-    const {
-      nombre,
-      apellido,
-      correo,
-      telefono,
-      especialidad,
-      clases,
-      horarios,
-    } = req.body;
+    const { nombre, apellido, correo, telefono, especialidad, clases } = req.body;
 
     const entrenador = await Entrenador.findById(req.params.id);
     if (!entrenador) {
       console.log("Entrenador no encontrado para el ID:", req.params.id);
       return res.status(404).json({ mensaje: "Entrenador no encontrado" });
-    }
-
-    // Transformar horarios a clases si se envía horarios pero no clases
-    let clasesFinales = clases || [];
-    if (horarios && Array.isArray(horarios) && !clases) {
-      console.log("Transformando horarios a clases...");
-      clasesFinales = horarios.map((horario) => ({
-        nombreClase: "Entrenamiento General",
-        dias: Array.isArray(horario) ? horario : [horario],
-        capacidadMaxima: 10,
-      }));
     }
 
     const updatedEntrenador = await Entrenador.findByIdAndUpdate(
@@ -138,7 +100,7 @@ const editarEntrenador = async (req, res) => {
         correo,
         telefono,
         especialidad,
-        clases: clasesFinales,
+        clases: clases || entrenador.clases, // Mantener clases existentes si no se envían nuevas
         updatedAt: new Date(),
       },
       { new: true, runValidators: true }
