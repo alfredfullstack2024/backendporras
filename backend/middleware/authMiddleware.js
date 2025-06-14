@@ -22,7 +22,6 @@ const protect = asyncHandler(async (req, res, next) => {
       const decoded = jwt.verify(token, process.env.JWT_SECRET);
       console.log("Token decodificado:", decoded);
 
-      // Cargar usuario desde la base de datos
       const userFromDB = await Usuario.findById(decoded.id).select("-password");
       if (!userFromDB) {
         console.log("Usuario no encontrado para el ID:", decoded.id);
@@ -31,17 +30,13 @@ const protect = asyncHandler(async (req, res, next) => {
           .json({ message: "No autorizado, usuario no encontrado" });
       }
 
-      // Usar solo datos de la base de datos
       req.user = userFromDB.toObject();
       console.log("Usuario cargado desde DB:", req.user);
-      req.user.rol = userFromDB.rol || "user"; // Fallback a "user" si no hay rol
-      // Normalizar el rol a minúsculas y asegurar consistencia
+      req.user.rol = userFromDB.rol || "user";
       if (req.user.rol) {
         req.user.rol = req.user.rol.toLowerCase().trim();
         const validRoles = ["admin", "entrenador", "recepcionista", "cliente"];
-        req.user.rol = validRoles.includes(req.user.rol)
-          ? req.user.rol
-          : "user";
+        req.user.rol = validRoles.includes(req.user.rol) ? req.user.rol : "user";
         console.log("Rol normalizado:", req.user.rol);
       }
       console.log("Usuario encontrado - Datos completos:", req.user);
@@ -67,7 +62,6 @@ const protect = asyncHandler(async (req, res, next) => {
   }
 });
 
-// Middleware para verificar el rol del usuario
 const verificarRol = (...rolesPermitidos) => {
   return asyncHandler(async (req, res, next) => {
     const user = req.user;
@@ -89,7 +83,6 @@ const verificarRol = (...rolesPermitidos) => {
   });
 };
 
-// Normalizar rutas dinámicas
 const normalizeRoute = (ruta) => {
   console.log("Ruta original:", ruta);
   ruta = ruta.endsWith("/") ? ruta.slice(0, -1) : ruta;
@@ -100,20 +93,11 @@ const normalizeRoute = (ruta) => {
       /\/rutinas\/consultarRutinasPorNumeroIdentificacion\/\w+/,
       "/rutinas/consultar/:numeroIdentificacion"
     )
-    .replace(
-      /\/rutinas\/consultar\/\w+/,
-      "/rutinas/consultar/:numeroIdentificacion"
-    )
+    .replace(/\/rutinas\/consultar\/\w+/, "/rutinas/consultar/:numeroIdentificacion")
     .replace(/\/rutinas\/asignar\/\w+/, "/rutinas/asignar/:id")
     .replace(/\/rutinas\/\w+/, "/rutinas/:id")
-    .replace(
-      /\/clases\/consultar\/\w+/,
-      "/clases/consultar/:numeroIdentificacion"
-    )
-    .replace(
-      /\/pagos\/consultar\/\w+/,
-      "/pagos/consultar/:numeroIdentificacion"
-    )
+    .replace(/\/clases\/consultar\/\w+/, "/clases/consultar/:numeroIdentificacion")
+    .replace(/\/pagos\/consultar\/\w+/, "/pagos/consultar/:numeroIdentificacion")
     .replace(
       /\/composicion-corporal\/cliente\/\w+/,
       "/composicion-corporal/cliente/:identificacion"
@@ -142,7 +126,6 @@ const normalizeRoute = (ruta) => {
   return normalized;
 };
 
-// Middleware para verificar permisos específicos por ruta
 const verificarPermisos = (rolesPermitidos) => {
   return asyncHandler(async (req, res, next) => {
     const user = req.user;
@@ -164,13 +147,11 @@ const verificarPermisos = (rolesPermitidos) => {
         .json({ message: "Acceso denegado: Rol no definido" });
     }
 
-    // Admin tiene acceso completo
     if (user.rol === "admin") {
       console.log("Usuario admin, acceso permitido");
       return next();
     }
 
-    // Verificar si el rol del usuario está en los roles permitidos
     if (!rolesPermitidos.includes(user.rol)) {
       console.log(
         `Acceso denegado: ${user.rol} no está en los roles permitidos ${rolesPermitidos}`
@@ -185,7 +166,6 @@ const verificarPermisos = (rolesPermitidos) => {
   });
 };
 
-// Definición de permisos por rol
 const permisosPorRol = {
   recepcionista: {
     rutas: {
@@ -218,7 +198,7 @@ const permisosPorRol = {
       "/api/composicion-corporal": ["POST", "GET"],
       "/api/composicion-corporal/cliente/:identificacion": ["GET"],
       "/api/entrenadores": ["POST", "GET", "PUT"],
-      "/api/entrenadores/:id": ["GET", "PUT"],
+      "/api/entrenadores/:id": ["GET", "PUT"], // Confirmado para EditarClases
       "/api/clases/inscritos": ["GET"],
       "/api/clientes": ["GET"],
       "/api/clientes/:id": ["GET"],
@@ -228,6 +208,7 @@ const permisosPorRol = {
     rutas: {
       "/api/usuarios": ["GET", "POST"],
       "/api/usuarios/:id": ["GET", "PUT", "DELETE"],
+      "/api/entrenadores/:id": ["GET", "PUT"], // Añadido explícitamente para admin
     },
   },
 };
