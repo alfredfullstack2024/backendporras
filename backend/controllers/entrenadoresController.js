@@ -63,11 +63,12 @@ const agregarEntrenador = async (req, res) => {
 const obtenerEntrenadorPorId = async (req, res) => {
   try {
     console.log("Iniciando obtenerEntrenadorPorId...");
-    const entrenador = await Entrenador.findById(req.params.id);
+    const entrenador = await Entrenador.findById(req.params.id).lean();
     if (!entrenador) {
       console.log("Entrenador no encontrado para el ID:", req.params.id);
       return res.status(404).json({ mensaje: "Entrenador no encontrado" });
     }
+    // Asegurarse de que las clases estén completamente resueltas
     console.log("Entrenador encontrado:", entrenador);
     res.json(entrenador);
   } catch (error) {
@@ -103,7 +104,7 @@ const editarEntrenador = async (req, res) => {
         clases: clases || entrenador.clases, // Mantener clases existentes si no se envían nuevas
         updatedAt: new Date(),
       },
-      { new: true, runValidators: true }
+      { new: true, runValidators: true, lean: true }
     );
 
     console.log("Entrenador actualizado:", updatedEntrenador);
