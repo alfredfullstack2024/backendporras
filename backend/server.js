@@ -21,8 +21,8 @@ const debugRoutes = (prefix, router) => {
 // Configuración de CORS
 const corsOptions = {
   origin: (origin, callback) => {
-    const allowedBaseOrigin = 'https://admin-gimnasios-frontend-zue1.vercel.app';
-    if (!origin || origin.startsWith('https://admin-gimnasios-frontend-zue1.vercel.app')) {
+    const allowedOriginPattern = /^https:\/\/admin-gimnasios-frontend-zue1-.*\.vercel\.app$/;
+    if (!origin || allowedOriginPattern.test(origin)) {
       callback(null, true);
     } else {
       console.warn(`Origen no permitido por CORS: ${origin}`);
