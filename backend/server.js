@@ -21,14 +21,11 @@ const debugRoutes = (prefix, router) => {
 // Configuración de CORS
 const corsOptions = {
   origin: (origin, callback) => {
-    const allowedOrigins = [
-      'https://admin-gimnasios-frontend-zue1.vercel.app',
-      'https://admin-gimnasios-frontend-zue1-6e5yitu7.vercel.app', // Ejemplo de subdominio
-      // Agrega más subdominios según los despliegues
-    ];
-    if (!origin || allowedOrigins.indexOf(origin) !== -1) {
+    const allowedBaseOrigin = 'https://admin-gimnasios-frontend-zue1.vercel.app';
+    if (!origin || origin.startsWith('https://admin-gimnasios-frontend-zue1.vercel.app')) {
       callback(null, true);
     } else {
+      console.warn(`Origen no permitido por CORS: ${origin}`);
       callback(new Error('No permitido por CORS'));
     }
   },
