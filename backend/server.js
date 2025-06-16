@@ -20,11 +20,22 @@ const debugRoutes = (prefix, router) => {
 
 // Configuración de CORS
 const corsOptions = {
-  origin: 'https://admin-gimnasios-frontend-zue1.vercel.app', // Asegúrate de que sea el origen correcto
+  origin: (origin, callback) => {
+    const allowedOrigins = [
+      'https://admin-gimnasios-frontend-zue1.vercel.app',
+      'https://admin-gimnasios-frontend-zue1-6e5yitu7.vercel.app', // Ejemplo de subdominio
+      // Agrega más subdominios según los despliegues
+    ];
+    if (!origin || allowedOrigins.indexOf(origin) !== -1) {
+      callback(null, true);
+    } else {
+      callback(new Error('No permitido por CORS'));
+    }
+  },
   methods: ['GET', 'POST', 'PUT', 'DELETE', 'OPTIONS'],
   allowedHeaders: ['Content-Type', 'Authorization'],
-  credentials: true, // Habilita cookies o autenticación
-  optionsSuccessStatus: 200 // Algunos navegadores requieren esto para OPTIONS
+  credentials: true,
+  optionsSuccessStatus: 200
 };
 
 // Validar variables de entorno
@@ -40,8 +51,14 @@ if (!process.env.JWT_SECRET) {
 const app = express();
 
 // Middleware de CORS
-app.options('*', cors(corsOptions)); // Manejo de solicitudes OPTIONS
-app.use(cors(corsOptions)); // Aplicar CORS a todas las rutas
+app.options('*', (req, res) => {
+  res.header('Access-Control-Allow-Origin', req.headers.origin || '*');
+  res.header('Access-Control-Allow-Methods', 'GET,POST,PUT,DELETE,OPTIONS');
+  res.header('Access-Control-Allow-Headers', 'Content-Type,Authorization');
+  res.header('Access-Control-Allow-Credentials', 'true');
+  res.sendStatus(200);
+});
+app.use(cors(corsOptions));
 
 app.use(express.json());
 
@@ -83,10 +100,7 @@ const composicionCorporalRoutes = require("./routes/composicionCorporal");
 
 // Middleware para rutas públicas y protegidas
 app.use((req, res, next) => {
-  if (req.path.startsWith("/api/composicion-corporal/cliente/")) {
-    return next();
-  }
-  if (req.path.startsWith("/api/auth")) {
+  if (req.path.startsWith("/api/composicion-corporal/cliente/") || req.path.startsWith("/api/auth")) {
     return next();
   }
   protect(req, res, next);
