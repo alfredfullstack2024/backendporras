@@ -21,8 +21,11 @@ const debugRoutes = (prefix, router) => {
 // Configuración de CORS
 const corsOptions = {
   origin: (origin, callback) => {
-    const allowedOriginPattern = /^https:\/\/admin-gimnasios-frontend-zue1-.*\.vercel\.app$/;
-    if (!origin || allowedOriginPattern.test(origin)) {
+    const allowedOrigins = [
+      'https://admin-gimnasios-frontend-zue1.vercel.app',
+      /^https:\/\/admin-gimnasios-frontend-zue1-.*\.vercel\.app$/,
+    ];
+    if (!origin || allowedOrigins.some(pattern => typeof pattern === 'string' ? pattern === origin : pattern.test(origin))) {
       callback(null, true);
     } else {
       console.warn(`Origen no permitido por CORS: ${origin}`);
@@ -47,14 +50,7 @@ if (!process.env.JWT_SECRET) {
 
 const app = express();
 
-// Middleware de CORS
-app.options('*', (req, res) => {
-  res.header('Access-Control-Allow-Origin', req.headers.origin || '*');
-  res.header('Access-Control-Allow-Methods', 'GET,POST,PUT,DELETE,OPTIONS');
-  res.header('Access-Control-Allow-Headers', 'Content-Type,Authorization');
-  res.header('Access-Control-Allow-Credentials', 'true');
-  res.sendStatus(200);
-});
+// Middleware de CORS (eliminamos app.options redundante)
 app.use(cors(corsOptions));
 
 app.use(express.json());
