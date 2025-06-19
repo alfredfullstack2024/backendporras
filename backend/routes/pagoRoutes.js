@@ -6,7 +6,7 @@ const Cliente = require("../models/Cliente");
 const Producto = require("../models/Producto");
 const { protect, verificarPermisos } = require("../middleware/authMiddleware");
 
-// Solo recepcionistas y admins pueden acceder
+// Solo recepcionistas, admins y usuarios pueden acceder
 router.get(
   "/:id",
   protect,
@@ -149,7 +149,7 @@ router.put(
 router.get(
   "/",
   protect,
-  verificarPermisos(["admin", "recepcionista"]),
+  verificarPermisos(["admin", "recepcionista", "user"]),
   async (req, res) => {
     try {
       console.log("Solicitud GET recibida en /api/pagos", req.query);
@@ -282,7 +282,7 @@ router.post(
 router.get(
   "/consultar/:numeroIdentificacion",
   protect,
-  verificarPermisos(["admin", "recepcionista"]),
+  verificarPermisos(["admin", "recepcionista", "user"]),
   async (req, res) => {
     try {
       console.log(
