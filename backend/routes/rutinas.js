@@ -93,7 +93,7 @@ router.delete(
   rutinaController.eliminarAsignacionRutina
 );
 
-// Consultar todas las rutinas asignadas por número de identificación (Admin, Entrenador y Cliente)
+// Consultar todas las rutinas asignadas por número de identificación (Admin, Entrenador y Usuario)
 router.get(
   "/consultarRutinasPorNumeroIdentificacion/:numeroIdentificacion",
   protect,
@@ -104,7 +104,7 @@ router.get(
     );
     next();
   },
-  verificarPermisos(["admin", "entrenador", "cliente"]),
+  verificarPermisos(["admin", "entrenador", "user"]),
   rutinaController.consultarRutinasPorNumeroIdentificacion
 );
 
