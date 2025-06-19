@@ -9,31 +9,36 @@ const {
   obtenerClases,
 } = require("../controllers/claseController");
 
-// Solo recepcionistas y admins pueden acceder (según permisosPorRol)
+// Solo recepcionistas, admins y usuarios pueden acceder (según permisosPorRol)
 router.get(
   "/disponibles",
   protect,
-  verificarPermisos(),
+  verificarPermisos(["admin", "recepcionista"]),
   obtenerClasesDisponibles
 );
 router.post(
   "/registrar",
   protect,
-  verificarPermisos(),
+  verificarPermisos(["admin", "recepcionista"]),
   registrarClienteEnClase
 );
 router.get(
   "/consultar/:numeroIdentificacion",
   protect,
-  verificarPermisos(),
+  verificarPermisos(["admin", "recepcionista", "user"]),
   consultarClasesPorNumeroIdentificacion
 );
 router.get(
   "/inscritos",
   protect,
-  verificarPermisos(),
+  verificarPermisos(["admin", "recepcionista"]),
   obtenerInscritosPorClase
 );
-router.get("/", protect, verificarPermisos(), obtenerClases);
+router.get(
+  "/",
+  protect,
+  verificarPermisos(["admin", "recepcionista"]),
+  obtenerClases
+);
 
 module.exports = router;
