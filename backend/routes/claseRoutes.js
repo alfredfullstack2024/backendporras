@@ -19,7 +19,7 @@ router.get(
 router.post(
   "/registrar",
   protect,
-  verificarPermisos(["admin", "recepcionista"]),
+  verificarPermisos(["admin", "recepcionista", "user"]),
   registrarClienteEnClase
 );
 router.get(
