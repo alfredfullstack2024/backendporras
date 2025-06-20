@@ -29,7 +29,7 @@ router.get(
   consultarClasesPorNumeroIdentificacion
 );
 router.get(
-  "/inscritos",
+  "/inscritos/:claseId",
   protect,
   verificarPermisos(["admin", "recepcionista"]),
   obtenerInscritosPorClase
