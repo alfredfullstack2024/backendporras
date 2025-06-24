@@ -6,7 +6,7 @@ const User = require("../models/User");
 // Registrar un nuevo usuario
 const register = async (req, res) => {
   try {
-    const { nombre, email, password, rol } = req.body; // Cambiado de role a rol
+    const { nombre, email, password, rol } = req.body;
 
     if (!nombre || !email || !password) {
       return res
@@ -26,13 +26,13 @@ const register = async (req, res) => {
       nombre,
       email,
       password: hashedPassword,
-      rol: rol || "user", // Cambiado de role a rol
+      rol: rol || "user",
     });
 
     const savedUser = await user.save();
 
     const token = jwt.sign(
-      { id: savedUser._id, rol: savedUser.rol }, // Cambiado de role a rol
+      { id: savedUser._id, rol: savedUser.rol },
       process.env.JWT_SECRET,
       { expiresIn: "30d" }
     );
@@ -43,7 +43,7 @@ const register = async (req, res) => {
         id: savedUser._id,
         nombre: savedUser.nombre,
         email: savedUser.email,
-        rol: savedUser.rol, // Cambiado de role a rol
+        rol: savedUser.rol,
       },
     });
   } catch (error) {
@@ -66,7 +66,7 @@ const login = async (req, res) => {
         .json({ message: "Email y contraseña son requeridos" });
     }
 
-    const user = await User.findOne({ email });
+    const user = await User.findOne({ email }).select("+rol +password"); // Asegura que se carguen rol y password
     if (!user) {
       return res.status(400).json({ message: "Credenciales inválidas" });
     }
@@ -77,7 +77,7 @@ const login = async (req, res) => {
     }
 
     const token = jwt.sign(
-      { id: user._id, rol: user.rol || "user" }, // Cambiado de role a rol
+      { id: user._id, rol: user.rol }, // Eliminar fallback a "user"
       process.env.JWT_SECRET,
       { expiresIn: "30d" }
     );
@@ -88,7 +88,7 @@ const login = async (req, res) => {
         id: user._id,
         nombre: user.nombre,
         email: user.email,
-        rol: user.rol || "user", // Cambiado de role a rol
+        rol: user.rol, // Eliminar fallback a "user"
       },
     });
   } catch (error) {
@@ -112,7 +112,7 @@ const getMe = async (req, res) => {
       id: user._id,
       nombre: user.nombre,
       email: user.email,
-      rol: user.rol || "user", // Cambiado de role a rol
+      rol: user.rol,
     });
   } catch (error) {
     console.error("Error al obtener datos del usuario:", error.message);
@@ -155,7 +155,7 @@ const update = async (req, res) => {
         id: user._id,
         nombre: user.nombre,
         email: user.email,
-        rol: user.rol || "user", // Cambiado de role a rol
+        rol: user.rol,
       },
     });
   } catch (error) {
