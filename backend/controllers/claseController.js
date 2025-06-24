@@ -37,6 +37,7 @@ exports.obtenerClasesDisponibles = async (req, res) => {
               const capacidadDisponible = claseDoc ? claseDoc.capacidadDisponible - registros : clase.capacidadMaxima - registros;
 
               return {
+                _id: clase._id || `${entrenador._id}-${clase.nombreClase}-${primerDia?.dia}-${primerDia?.horarioInicio}`, // ID único temporal
                 entrenadorId: entrenador._id.toString(),
                 entrenadorNombre: entrenador.nombre,
                 especialidad: entrenador.especialidad,
@@ -79,6 +80,7 @@ exports.registrarClienteEnClase = async (req, res) => {
       dia,
       horarioInicio,
       horarioFin,
+      claseId, // Nuevo campo para identificar la clase
     } = req.body;
 
     console.log("🚀 [REGISTRO] Datos recibidos para registrar:", req.body);
@@ -89,7 +91,8 @@ exports.registrarClienteEnClase = async (req, res) => {
       !nombreClase ||
       !dia ||
       !horarioInicio ||
-      !horarioFin
+      !horarioFin ||
+      !claseId
     ) {
       console.log("❌ [REGISTRO] Faltan campos requeridos:", {
         numeroIdentificacion,
@@ -98,9 +101,10 @@ exports.registrarClienteEnClase = async (req, res) => {
         dia,
         horarioInicio,
         horarioFin,
+        claseId,
       });
       return res.status(400).json({
-        message: "Todos los campos son requeridos.",
+        message: "Todos los campos son requeridos, incluyendo claseId.",
       });
     }
     console.log("✅ [REGISTRO] Todos los campos están presentes.");
@@ -129,16 +133,17 @@ exports.registrarClienteEnClase = async (req, res) => {
 
     const clase = entrenador.clases.find(
       (c) =>
-        c.nombreClase === nombreClase &&
-        c.dias.some(
-          (d) =>
-            d.dia === dia &&
-            d.horarioInicio === horarioInicio &&
-            d.horarioFin === horarioFin
-        )
+        c._id === claseId || // Usar claseId si existe
+        (c.nombreClase === nombreClase &&
+          c.dias.some(
+            (d) =>
+              d.dia === dia &&
+              d.horarioInicio === horarioInicio &&
+              d.horarioFin === horarioFin
+          ))
     );
     if (!clase) {
-      console.log("❌ [REGISTRO] Clase no encontrada:", { nombreClase, dia, horarioInicio, horarioFin });
+      console.log("❌ [REGISTRO] Clase no encontrada:", { claseId, nombreClase, dia, horarioInicio, horarioFin });
       return res
         .status(404)
         .json({ message: "Clase no encontrada en el entrenador." });
@@ -166,9 +171,9 @@ exports.registrarClienteEnClase = async (req, res) => {
       horarioInicio,
       horarioFin,
     });
-    const claseDoc = await Clase.findOne({ nombre: nombreClase });
+    const claseDoc = await Clase.findById(claseId); // Usar claseId en lugar de nombre
     if (!claseDoc) {
-      console.log("❌ [REGISTRO] Clase no encontrada en modelo Clase:", nombreClase);
+      console.log("❌ [REGISTRO] Clase no encontrada en modelo Clase:", claseId);
       return res.status(404).json({ message: "Clase no encontrada en la base de datos." });
     }
     if (registros >= claseDoc.capacidadMaxima) {
@@ -210,6 +215,7 @@ exports.registrarClienteEnClase = async (req, res) => {
   }
 };
 
+// Mantener las demás exportaciones sin cambios
 exports.consultarClasesPorNumeroIdentificacion = async (req, res) => {
   const { numeroIdentificacion } = req.params;
 
