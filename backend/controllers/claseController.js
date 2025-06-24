@@ -210,7 +210,135 @@ exports.registrarClienteEnClase = async (req, res) => {
   }
 };
 
-// Mantener las demás exportaciones (consultarClasesPorNumeroIdentificacion, obtenerInscritosPorClase, obtenerClases) sin cambios
-exports.consultarClasesPorNumeroIdentificacion = require("./claseController").consultarClasesPorNumeroIdentificacion;
-exports.obtenerInscritosPorClase = require("./claseController").obtenerInscritosPorClase;
-exports.obtenerClases = require("./claseController").obtenerClases;
+exports.consultarClasesPorNumeroIdentificacion = async (req, res) => {
+  const { numeroIdentificacion } = req.params;
+
+  try {
+    const registros = await RegistroClases.find({
+      numeroIdentificacion,
+    }).lean();
+    if (!registros || registros.length === 0) {
+      return res
+        .status(404)
+        .json({ message: "No se encontraron registros para este cliente." });
+    }
+
+    const clasesConDetalles = await Promise.all(
+      registros.map(async (registro) => {
+        const entrenador = await Entrenador.findById(
+          registro.entrenadorId
+        ).lean();
+        return {
+          nombreCompleto: `${registro.nombre} ${registro.apellido}`,
+          entrenadorNombre: entrenador ? entrenador.nombre : "Desconocido",
+          nombreClase: registro.nombreClase,
+          dia: registro.dia,
+          horarioInicio: registro.horarioInicio,
+          horarioFin: registro.horarioFin,
+        };
+      })
+    );
+    res.json(clasesConDetalles);
+  } catch (error) {
+    console.error("Error al consultar clases:", error.message);
+    res
+      .status(500)
+      .json({ message: "Error interno del servidor.", error: error.message });
+  }
+};
+
+exports.obtenerInscritosPorClase = async (req, res) => {
+  try {
+    const { entrenadorId, nombreClase, dia, horarioInicio, horarioFin } =
+      req.query;
+
+    console.log("Parámetros recibidos en /inscritos:", {
+      entrenadorId,
+      nombreClase,
+      dia,
+      horarioInicio,
+      horarioFin,
+    });
+
+    if (
+      !entrenadorId ||
+      !nombreClase ||
+      !dia ||
+      !horarioInicio ||
+      !horarioFin
+    ) {
+      return res.status(400).json({
+        message:
+          "Todos los parámetros (entrenadorId, nombreClase, dia, horarioInicio, horarioFin) son requeridos.",
+      });
+    }
+
+    const inscritos = await RegistroClases.find({
+      entrenadorId,
+      nombreClase: {
+        $regex: new RegExp(nombreClase.trim().toLowerCase(), "i"),
+      },
+      dia: dia.toLowerCase().trim(),
+      horarioInicio: horarioInicio.trim().padStart(5, "0"),
+      horarioFin: horarioFin.trim().padStart(5, "0"),
+    }).lean();
+
+    console.log("Inscritos encontrados:", inscritos);
+
+    if (!inscritos || inscritos.length === 0) {
+      return res
+        .status(404)
+        .json({ message: "No hay inscritos en esta clase." });
+    }
+
+    const nombresInscritos = inscritos.map((inscrito) => ({
+      nombreCompleto: `${inscrito.nombre} ${inscrito.apellido}`,
+    }));
+
+    console.log("Nombres de inscritos devueltos:", nombresInscritos);
+    res.json(nombresInscritos);
+  } catch (error) {
+    console.error("Error al obtener inscritos por clase:", error.message);
+    res.status(500).json({
+      message: "Error interno del servidor al obtener inscritos.",
+      error: error.message,
+    });
+  }
+};
+
+exports.obtenerClases = async (req, res) => {
+  try {
+    console.log("Solicitud GET /api/clases recibida");
+    const entrenadores = await Entrenador.find().lean();
+
+    if (!entrenadores || entrenadores.length === 0) {
+      console.log("No se encontraron entrenadores en la base de datos.");
+      return res.status(404).json({ message: "No se encontraron clases." });
+    }
+
+    const todasLasClases = entrenadores.flatMap((entrenador) =>
+      entrenador.clases
+        ? entrenador.clases.map((clase) => ({
+            ...clase,
+            entrenadorId: entrenador._id.toString(),
+            entrenadorNombre: entrenador.nombre,
+            especialidad: entrenador.especialidad,
+          }))
+        : []
+    );
+
+    if (todasLasClases.length === 0) {
+      console.log("No se encontraron clases en los entrenadores.");
+      return res.status(404).json({ message: "No se encontraron clases." });
+    }
+
+    console.log("Clases enviadas:", todasLasClases);
+    res.json(todasLasClases);
+  } catch (error) {
+    console.error("Error al obtener clases:", error.stack);
+    res.status(500).json({
+      message: "Error interno del servidor al obtener clases.",
+      error: error.message,
+    });
+  }
+};
