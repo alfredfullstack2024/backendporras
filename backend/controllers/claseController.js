@@ -340,3 +340,47 @@ exports.obtenerClases = async (req, res) => {
     });
   }
 };
+
+// Nueva función para el ADMIN
+exports.obtenerTodasInscripciones = async (req, res) => {
+  try {
+    console.log("Solicitud GET /api/clases/todas-inscripciones recibida");
+    const inscripciones = await RegistroClases.find()
+      .populate("numeroIdentificacion", "nombre apellido correoElectronico") // Asegúrate de que Cliente tenga estos campos
+      .lean();
+
+    if (!inscripciones || inscripciones.length === 0) {
+      console.log("No se encontraron inscripciones.");
+      return res.status(404).json({ message: "No hay inscripciones registradas." });
+    }
+
+    // Agrupar por clase
+    const inscripcionesPorClase = inscripciones.reduce((acc, registro) => {
+      const clave = `${registro.nombreClase}-${registro.dia}-${registro.horarioInicio}-${registro.horarioFin}`;
+      if (!acc[clave]) {
+        acc[clave] = {
+          nombreClase: registro.nombreClase,
+          dia: registro.dia,
+          horarioInicio: registro.horarioInicio,
+          horarioFin: registro.horarioFin,
+          inscritos: [],
+        };
+      }
+      acc[clave].inscritos.push({
+        numeroIdentificacion: registro.numeroIdentificacion._id,
+        nombreCompleto: `${registro.numeroIdentificacion.nombre} ${registro.numeroIdentificacion.apellido}`,
+        correo: registro.numeroIdentificacion.correoElectronico,
+      });
+      return acc;
+    }, {});
+
+    console.log("Inscripciones por clase enviadas:", Object.values(inscripcionesPorClase));
+    res.json(Object.values(inscripcionesPorClase));
+  } catch (error) {
+    console.error("Error al obtener todas las inscripciones:", error.stack);
+    res.status(500).json({
+      message: "Error interno del servidor al obtener inscripciones.",
+      error: error.message,
+    });
+  }
+};
