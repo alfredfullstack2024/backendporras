@@ -37,7 +37,7 @@ exports.obtenerClasesDisponibles = async (req, res) => {
               const capacidadDisponible = claseDoc ? claseDoc.capacidadDisponible - registros : clase.capacidadMaxima - registros;
 
               return {
-                _id: clase._id || `${entrenador._id}-${clase.nombreClase}-${primerDia?.dia}-${primerDia?.horarioInicio}`, // ID único temporal
+                _id: claseDoc?._id || clase._id || `${entrenador._id}-${clase.nombreClase}-${primerDia?.dia}-${primerDia?.horarioInicio}`, // Priorizar _id de Clase o clase, luego fallback
                 entrenadorId: entrenador._id.toString(),
                 entrenadorNombre: entrenador.nombre,
                 especialidad: entrenador.especialidad,
@@ -80,7 +80,7 @@ exports.registrarClienteEnClase = async (req, res) => {
       dia,
       horarioInicio,
       horarioFin,
-      claseId, // Nuevo campo para identificar la clase
+      claseId,
     } = req.body;
 
     console.log("🚀 [REGISTRO] Datos recibidos para registrar:", req.body);
@@ -171,7 +171,7 @@ exports.registrarClienteEnClase = async (req, res) => {
       horarioInicio,
       horarioFin,
     });
-    const claseDoc = await Clase.findById(claseId); // Usar claseId en lugar de nombre
+    const claseDoc = await Clase.findById(claseId);
     if (!claseDoc) {
       console.log("❌ [REGISTRO] Clase no encontrada en modelo Clase:", claseId);
       return res.status(404).json({ message: "Clase no encontrada en la base de datos." });
