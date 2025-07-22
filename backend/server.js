@@ -22,8 +22,8 @@ const debugRoutes = (prefix, router) => {
 const corsOptions = {
   origin: (origin, callback) => {
     const allowedOrigins = [
-      'https://admin-gimnasios-frontend-zue1.vercel.app',
-      /^https:\/\/admin-gimnasios-frontend-zue1-.*\.vercel\.app$/,
+      
+      'https://frontendporras.vercel.app',
     ];
     if (!origin || allowedOrigins.some(pattern => typeof pattern === 'string' ? pattern === origin : pattern.test(origin))) {
       callback(null, true);
