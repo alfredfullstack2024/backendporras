@@ -22,10 +22,9 @@ const debugRoutes = (prefix, router) => {
 const corsOptions = {
   origin: (origin, callback) => {
     const allowedOrigins = [
-      'https://frontendporras.vercel.app',
-      'https://frontendporras-kr6gmznp-alfredos-projects-a028b04c.vercel.app',
+      'https://frontendporras-krs6mqznp-alfredos-projects-a028b04c.vercel.app',
     ];
-    if (!origin || allowedOrigins.some(pattern => pattern === origin)) {
+    if (!origin || allowedOrigins.includes(origin)) {
       callback(null, true);
     } else {
       console.warn(`Origen no permitido por CORS: ${origin}`);
