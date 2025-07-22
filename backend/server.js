@@ -24,7 +24,7 @@ const corsOptions = {
     const allowedOrigins = [
       'https://frontendporras-krs6mqznp-alfredos-projects-a028b04c.vercel.app',
     ];
-    if (!origin || allowedOrigins.includes(origin)) {
+    if (!origin || allowedOrigins.some(pattern => typeof pattern === 'string' ? pattern === origin : pattern.test(origin))) {
       callback(null, true);
     } else {
       console.warn(`Origen no permitido por CORS: ${origin}`);
