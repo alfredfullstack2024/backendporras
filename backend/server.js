@@ -23,6 +23,7 @@ const corsOptions = {
   origin: (origin, callback) => {
     const allowedOrigins = [
       'https://frontendporras-krs6mqznp-alfredos-projects-a028b04c.vercel.app',
+      'https://frontendporras.vercel.app',
     ];
     if (!origin || allowedOrigins.includes(origin)) {
       callback(null, true);
