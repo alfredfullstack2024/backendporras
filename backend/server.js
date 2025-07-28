@@ -22,9 +22,9 @@ const debugRoutes = (prefix, router) => {
 const corsOptions = {
   origin: (origin, callback) => {
     const allowedOrigins = [
-      'https://frontendporras-h9h4guxg6-alfredos-projects-a028b04c.vercel.app/',
+      'https://frontendporras-m0kjb2z7p-alfredos-projects-a028b04c.vercel.app', // Nuevo origen
       'https://frontendporras.vercel.app',
-      /^https:\/\/frontendporras-.*\.vercel\.app$/, // Para subdominios
+      /^https:\/\/frontendporras-.*\.vercel\.app$/, // Regex para subdominios
     ];
     if (!origin || allowedOrigins.some(pattern => typeof pattern === 'string' ? pattern === origin : pattern.test(origin))) {
       callback(null, true);
@@ -38,7 +38,6 @@ const corsOptions = {
   credentials: true,
   optionsSuccessStatus: 200
 };
-
 // Validar variables de entorno
 if (!process.env.MONGODB_URI) {
   console.error("❌ Error: La variable de entorno MONGODB_URI no está definida. Verifica tu archivo .env o las variables en Render.");
