@@ -60,24 +60,34 @@ const login = async (req, res) => {
   try {
     const { email, password } = req.body;
     console.log("Datos recibidos:", { email, password });
+
     if (!email || !password) {
       console.log("Falta email o password");
-      return res.status(400).json({ message: "Email y contraseña son requeridos" });
+      return res
+        .status(400)
+        .json({ message: "Email y contraseña son requeridos" });
     }
 
     const user = await User.findOne({ email }).select("+rol +password");
     console.log("Usuario encontrado:", user ? user.email : "No encontrado");
+
     if (!user) {
       return res.status(400).json({ message: "Credenciales inválidas" });
     }
 
     const isMatch = await bcrypt.compare(password, user.password);
     console.log("Contraseña válida:", isMatch);
+
     if (!isMatch) {
       return res.status(400).json({ message: "Credenciales inválidas" });
     }
 
-    const token = jwt.sign({ id: user._id, rol: user.rol }, process.env.JWT_SECRET, { expiresIn: "30d" });
+    const token = jwt.sign(
+      { id: user._id, rol: user.rol },
+      process.env.JWT_SECRET,
+      { expiresIn: "30d" }
+    );
+
     console.log("Token generado:", token);
 
     res.json({
@@ -87,26 +97,6 @@ const login = async (req, res) => {
         nombre: user.nombre,
         email: user.email,
         rol: user.rol,
-      },
-    });
-  } catch (error) {
-    console.error("Error al iniciar sesión:", error.message);
-    res.status(500).json({ message: "Error al iniciar sesión", detalle: error.message });
-  }
-};
-    const token = jwt.sign(
-      { id: user._id, rol: user.rol }, // Eliminar fallback a "user"
-      process.env.JWT_SECRET,
-      { expiresIn: "30d" }
-    );
-
-    res.json({
-      token,
-      user: {
-        id: user._id,
-        nombre: user.nombre,
-        email: user.email,
-        rol: user.rol, // Eliminar fallback a "user"
       },
     });
   } catch (error) {
