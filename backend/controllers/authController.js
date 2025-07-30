@@ -59,7 +59,7 @@ const register = async (req, res) => {
 const login = async (req, res) => {
   try {
     const { email, password } = req.body;
-    console.log("Datos recibidos en login:", { email, password });
+    console.log("Datos recibidos:", { email, password });
     if (!email || !password) {
       console.log("Falta email o password");
       return res.status(400).json({ message: "Email y contraseña son requeridos" });
@@ -94,7 +94,6 @@ const login = async (req, res) => {
     res.status(500).json({ message: "Error al iniciar sesión", detalle: error.message });
   }
 };
-
     const token = jwt.sign(
       { id: user._id, rol: user.rol }, // Eliminar fallback a "user"
       process.env.JWT_SECRET,
