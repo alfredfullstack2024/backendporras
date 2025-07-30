@@ -22,7 +22,6 @@ const debugRoutes = (prefix, router) => {
 const corsOptions = {
   origin: (origin, callback) => {
     const allowedOrigins = [
-      "https://frontendporras-m0kjb2z7p-alfredos-projects-a028b04c.vercel.app",
       "https://frontendporras.vercel.app",
       /^https:\/\/frontendporras-.*\.vercel\.app$/,
     ];
