@@ -2,21 +2,18 @@ const mongoose = require("mongoose");
 
 const connectDB = async () => {
   try {
-    if (!process.env.MONGODB_URI) {
-      throw new Error(
-        "La variable de entorno MONGODB_URI no está definida. Verifica tu archivo .env."
-      );
-    }
-    console.log(
-      "Intentando conectar a MongoDB Atlas:",
-      process.env.MONGODB_URI
+    const conn = await mongoose.connect(
+      "mongodb+srv://gerencia:otF0Z8wGvnJdgm2T@cluster0.lvhzkqg.mongodb.net/porrismo?retryWrites=true&w=majority&appName=Cluster0",
+      {
+        useNewUrlParser: true,
+        useUnifiedTopology: true,
+      }
     );
-    const conn = await mongoose.connect(process.env.MONGODB_URI);
-    console.log(`MongoDB Conectado: ${conn.connection.host}`);
+    console.log(`MongoDB conectado: ${conn.connection.host} - DB: ${conn.connection.name}`);
   } catch (error) {
-    console.error(`Error en la conexión a MongoDB: ${error.message}`);
+    console.error("Error al conectar a MongoDB:", error.message);
     process.exit(1);
   }
 };
 
-module.exports = { connectDB, mongoose };
+module.exports = connectDB;
