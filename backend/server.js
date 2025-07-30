@@ -3,7 +3,7 @@ console.log("Variables de entorno cargadas:", process.env.MONGODB_URI);
 
 const express = require("express");
 const cors = require("cors");
-const { connectDB } = require("./config/db");
+const connectDB = require("./config/db"); // Corrección en la importación
 const { protect } = require("./middleware/authMiddleware");
 
 // Función para depurar rutas
@@ -22,22 +22,23 @@ const debugRoutes = (prefix, router) => {
 const corsOptions = {
   origin: (origin, callback) => {
     const allowedOrigins = [
-      'https://frontendporras-m0kjb2z7p-alfredos-projects-a028b04c.vercel.app', // Nuevo origen
-      'https://frontendporras.vercel.app',
-      /^https:\/\/frontendporras-.*\.vercel\.app$/, // Regex para subdominios
+      "https://frontendporras-m0kjb2z7p-alfredos-projects-a028b04c.vercel.app",
+      "https://frontendporras.vercel.app",
+      /^https:\/\/frontendporras-.*\.vercel\.app$/,
     ];
-    if (!origin || allowedOrigins.some(pattern => typeof pattern === 'string' ? pattern === origin : pattern.test(origin))) {
+    if (!origin || allowedOrigins.some(pattern => typeof pattern === "string" ? pattern === origin : pattern.test(origin))) {
       callback(null, true);
     } else {
       console.warn(`Origen no permitido por CORS: ${origin}`);
-      callback(new Error('No permitido por CORS'));
+      callback(new Error("No permitido por CORS"));
     }
   },
-  methods: ['GET', 'POST', 'PUT', 'DELETE', 'OPTIONS'],
-  allowedHeaders: ['Content-Type', 'Authorization'],
+  methods: ["GET", "POST", "PUT", "DELETE", "OPTIONS"],
+  allowedHeaders: ["Content-Type", "Authorization"],
   credentials: true,
-  optionsSuccessStatus: 200
+  optionsSuccessStatus: 200,
 };
+
 // Validar variables de entorno
 if (!process.env.MONGODB_URI) {
   console.error("❌ Error: La variable de entorno MONGODB_URI no está definida. Verifica tu archivo .env o las variables en Render.");
@@ -50,9 +51,8 @@ if (!process.env.JWT_SECRET) {
 
 const app = express();
 
-// Middleware de CORS (eliminamos app.options redundante)
+// Middleware de CORS
 app.use(cors(corsOptions));
-
 app.use(express.json());
 
 // Middleware para registrar solicitudes
