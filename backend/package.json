@@ -1,5 +1,5 @@
 {
-  "name": "admin-gimnasios-backend",
+  "name": "admin-porras",
   "version": "0.1.0",
   "main": "server.js",
   "scripts": {
@@ -21,3 +21,4 @@
     "nodemon": "^3.0.1"
   }
 }
+
