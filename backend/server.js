@@ -60,17 +60,21 @@ app.use((req, res, next) => {
   next();
 });
 
-// Importar y registrar modelos
+// Importar y registrar modelos con logs
+console.log("Cargando modelos...");
 require("./models/User");
 require("./models/Contabilidad");
 require("./models/Entrenador");
 require("./models/Cliente");
 require("./models/RegistroClases");
 require("./models/ComposicionCorporal");
+console.log("Modelos cargados exitosamente");
 
 // Conectar a MongoDB con manejo de errores
 console.log("Iniciando conexión a MongoDB...");
-connectDB().catch((error) => {
+connectDB().then(() => {
+  console.log("✅ Conexión a MongoDB establecida exitosamente");
+}).catch((error) => {
   console.error("❌ Error al conectar a MongoDB:", error.message);
   process.exit(1);
 });
