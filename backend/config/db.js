@@ -3,7 +3,7 @@ const mongoose = require("mongoose");
 const connectDB = async () => {
   try {
     const conn = await mongoose.connect(
-      "mongodb+srv://gerencia:otF0Z8wGvnJdgm2T@cluster0.lvhzkqg.mongodb.net/porras?retryWrites=true&w=majority&appName=Cluster0"
+      "mongodb+srv://gerencia:otF0Z8wGvnJdgm2T@cluster0.lvhzkqg.mongodb.net/porrismo?retryWrites=true&w=majority&appName=Cluster0"
     );
     console.log(`🟢 MongoDB conectado: ${conn.connection.host}`);
   } catch (error) {
@@ -13,4 +13,5 @@ const connectDB = async () => {
 };
 
 module.exports = connectDB;
+
 
