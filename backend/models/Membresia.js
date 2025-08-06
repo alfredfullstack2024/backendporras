@@ -28,7 +28,7 @@ const membresiaSchema = new mongoose.Schema(
     },
     fechainicio: {
       type: Date,
-      default: Date.now,
+      default: Date.now, // Corregido a función
     },
     fechafin: {
       type: Date,
