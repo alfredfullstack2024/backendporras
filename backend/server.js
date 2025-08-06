@@ -3,7 +3,7 @@ console.log("Variables de entorno cargadas:", process.env.MONGODB_URI);
 
 const express = require("express");
 const cors = require("cors");
-const { connectDB } = require("./config/db"); // Corrección en la importación
+const { connectDB } = require("./config/db"); // Importación correcta
 const { protect } = require("./middleware/authMiddleware");
 
 // Función para depurar rutas
@@ -72,7 +72,7 @@ console.log("Modelos cargados exitosamente");
 
 // Conectar a MongoDB con manejo de errores
 console.log("Iniciando conexión a MongoDB...");
-connectDB().then(() => {
+connectDB().then(() => { // Corregido a connectDB
   console.log("✅ Conexión a MongoDB establecida exitosamente");
 }).catch((error) => {
   console.error("❌ Error al conectar a MongoDB:", error.message);
