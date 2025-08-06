@@ -3,7 +3,7 @@ console.log("Variables de entorno cargadas:", process.env.MONGODB_URI);
 
 const express = require("express");
 const cors = require("cors");
-const connectDB = require("./config/db"); // Corrección en la importación
+const { connectDB } = require("./config/db"); // Corrección en la importación
 const { protect } = require("./middleware/authMiddleware");
 
 // Función para depurar rutas
