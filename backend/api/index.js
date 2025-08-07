@@ -8,7 +8,7 @@ const app = express();
 // Configura CORS para tu frontend
 app.use(
   cors({
-    origin: "https://tu-proyecto-frente.vercel.app", // Reemplaza con tu dominio de Vercel
+    origin: "https://frontendporras.vercel.app/dashboard", // Reemplaza con tu dominio de Vercel
     methods: "GET,POST,PUT,DELETE",
     credentials: true,
   })
@@ -45,3 +45,4 @@ app.use("/api", router);
 
 // Exporta la app para Vercel
 module.exports = app;
+
