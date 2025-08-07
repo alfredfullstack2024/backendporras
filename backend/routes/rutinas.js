@@ -7,13 +7,6 @@ const { protect, verificarPermisos } = require("../middleware/authMiddleware");
 router.post(
   "/",
   protect,
-  (req, res, next) => {
-    console.log(
-      "Ruta POST /api/rutinas - req.user después de protect:",
-      req.user
-    );
-    next();
-  },
   verificarPermisos(["admin", "entrenador"]),
   rutinaController.crearRutina
 );
@@ -22,13 +15,6 @@ router.post(
 router.get(
   "/",
   protect,
-  (req, res, next) => {
-    console.log(
-      "Ruta GET /api/rutinas - req.user después de protect:",
-      req.user
-    );
-    next();
-  },
   verificarPermisos(["admin", "entrenador"]),
   rutinaController.listarRutinas
 );
@@ -37,13 +23,6 @@ router.get(
 router.put(
   "/:id",
   protect,
-  (req, res, next) => {
-    console.log(
-      "Ruta PUT /api/rutinas/:id - req.user después de protect:",
-      req.user
-    );
-    next();
-  },
   verificarPermisos(["admin"]),
   rutinaController.actualizarRutina
 );
@@ -52,13 +31,6 @@ router.put(
 router.post(
   "/asignar",
   protect,
-  (req, res, next) => {
-    console.log(
-      "Ruta POST /api/rutinas/asignar - req.user después de protect:",
-      req.user
-    );
-    next();
-  },
   verificarPermisos(["admin", "entrenador"]),
   rutinaController.asignarRutina
 );
@@ -67,13 +39,6 @@ router.post(
 router.put(
   "/asignar/:id",
   protect,
-  (req, res, next) => {
-    console.log(
-      "Ruta PUT /api/rutinas/asignar/:id - req.user después de protect:",
-      req.user
-    );
-    next();
-  },
   verificarPermisos(["admin", "entrenador"]),
   rutinaController.actualizarAsignacionRutina
 );
@@ -82,13 +47,6 @@ router.put(
 router.delete(
   "/asignar/:id",
   protect,
-  (req, res, next) => {
-    console.log(
-      "Ruta DELETE /api/rutinas/asignar/:id - req.user después de protect:",
-      req.user
-    );
-    next();
-  },
   verificarPermisos(["admin"]),
   rutinaController.eliminarAsignacionRutina
 );
@@ -97,15 +55,8 @@ router.delete(
 router.get(
   "/consultarRutinasPorNumeroIdentificacion/:numeroIdentificacion",
   protect,
-  (req, res, next) => {
-    console.log(
-      "Ruta GET /api/rutinas/consultarRutinasPorNumeroIdentificacion/:numeroIdentificacion - req.user después de protect:",
-      req.user
-    );
-    next();
-  },
   verificarPermisos(["admin", "entrenador", "user"]),
   rutinaController.consultarRutinasPorNumeroIdentificacion
 );
 
-module.exports = router;
+module.exports = router; // Solo exportar el router, no el modelo
