@@ -59,4 +59,4 @@ router.get(
   rutinaController.consultarRutinasPorNumeroIdentificacion
 );
 
-module.exports = router; // Solo exportar el router, no el modelo
+module.exports = router;
