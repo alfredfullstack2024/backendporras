@@ -7,18 +7,14 @@ const User = require("../models/User");
 const register = async (req, res) => {
   try {
     const { nombre, email, password, rol } = req.body;
-    console.log("Datos recibidos en register:", { nombre, email, rol });
 
     if (!nombre || !email || !password) {
-      console.log("Falta nombre, email o password");
       return res
         .status(400)
         .json({ message: "Nombre, email y contraseña son requeridos" });
     }
 
     const existingUser = await User.findOne({ email });
-    console.log("Usuario existente:", existingUser ? existingUser.email : "No encontrado");
-
     if (existingUser) {
       return res.status(400).json({ message: "El email ya está registrado" });
     }
@@ -34,7 +30,6 @@ const register = async (req, res) => {
     });
 
     const savedUser = await user.save();
-    console.log("Usuario guardado:", savedUser.email);
 
     const token = jwt.sign(
       { id: savedUser._id, rol: savedUser.rol },
@@ -64,36 +59,28 @@ const register = async (req, res) => {
 const login = async (req, res) => {
   try {
     const { email, password } = req.body;
-    console.log("Datos recibidos en login:", { email, password });
 
     if (!email || !password) {
-      console.log("Falta email o password");
       return res
         .status(400)
         .json({ message: "Email y contraseña son requeridos" });
     }
 
-    const user = await User.findOne({ email }).select("+rol +password");
-    console.log("Usuario encontrado:", user ? user.email : "No encontrado");
-
+    const user = await User.findOne({ email }).select("+rol +password"); // Asegura que se carguen rol y password
     if (!user) {
       return res.status(400).json({ message: "Credenciales inválidas" });
     }
 
     const isMatch = await bcrypt.compare(password, user.password);
-    console.log("Contraseña válida:", isMatch);
-
     if (!isMatch) {
       return res.status(400).json({ message: "Credenciales inválidas" });
     }
 
     const token = jwt.sign(
-      { id: user._id, rol: user.rol },
+      { id: user._id, rol: user.rol }, // Eliminar fallback a "user"
       process.env.JWT_SECRET,
       { expiresIn: "30d" }
     );
-
-    console.log("Token generado:", token);
 
     res.json({
       token,
@@ -101,7 +88,7 @@ const login = async (req, res) => {
         id: user._id,
         nombre: user.nombre,
         email: user.email,
-        rol: user.rol,
+        rol: user.rol, // Eliminar fallback a "user"
       },
     });
   } catch (error) {
@@ -116,10 +103,7 @@ const login = async (req, res) => {
 // Obtener los datos del usuario autenticado
 const getMe = async (req, res) => {
   try {
-    console.log("Obteniendo datos del usuario con ID:", req.user.id);
     const user = await User.findById(req.user.id).select("-password");
-    console.log("Usuario encontrado:", user ? user.email : "No encontrado");
-
     if (!user) {
       return res.status(404).json({ message: "Usuario no encontrado" });
     }
@@ -143,12 +127,9 @@ const getMe = async (req, res) => {
 const update = async (req, res) => {
   try {
     const { nombre, email, password } = req.body;
-    console.log("Datos recibidos en update:", { nombre, email });
-
     const userId = req.user.id;
-    const user = await User.findById(userId);
-    console.log("Usuario encontrado para actualización:", user ? user.email : "No encontrado");
 
+    const user = await User.findById(userId);
     if (!user) {
       return res.status(404).json({ mensaje: "Usuario no encontrado" });
     }
@@ -156,7 +137,6 @@ const update = async (req, res) => {
     if (nombre) user.nombre = nombre;
     if (email) {
       const emailExists = await User.findOne({ email, _id: { $ne: userId } });
-      console.log("Email existente:", emailExists ? emailExists.email : "No encontrado");
       if (emailExists) {
         return res.status(400).json({ mensaje: "El email ya está en uso" });
       }
@@ -168,7 +148,6 @@ const update = async (req, res) => {
     }
 
     await user.save();
-    console.log("Usuario actualizado:", user.email);
 
     res.json({
       message: "Usuario actualizado con éxito",
