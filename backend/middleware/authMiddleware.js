@@ -1,6 +1,6 @@
 const jwt = require("jsonwebtoken");
 const asyncHandler = require("express-async-handler");
-const Usuario = require("../models/Usuario"); // Línea 2: Causa el conflicto
+const Usuario = require("../models/Usuario");
 
 // Middleware para verificar el token y autenticar al usuario
 const protect = asyncHandler(async (req, res, next) => {
@@ -45,4 +45,14 @@ const protect = asyncHandler(async (req, res, next) => {
   }
 });
 
-module.exports = { protect };
+// Middleware para verificar permisos de rol
+const verificarPermisos = (rolesPermitidos) => {
+  return (req, res, next) => {
+    if (!req.user || !rolesPermitidos.includes(req.user.rol)) {
+      return res.status(403).json({ message: "No tienes permisos para esta acción" });
+    }
+    next();
+  };
+};
+
+module.exports = { protect, verificarPermisos };
