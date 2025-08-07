@@ -7,18 +7,16 @@ const asyncHandler = require("express-async-handler");
 // @route   POST /api/rutinas
 // @access  Private (Admin)
 exports.crearRutina = asyncHandler(async (req, res) => {
-  const { grupoMuscular, nombreEjercicio, series, repeticiones, descripcion } =
-    req.body;
+  const { equipo, nivelDeEquipo, posicion, descripcion } = req.body;
 
   console.log("Creando rutina - Paso 1: Datos recibidos:", req.body);
   console.log("Creando rutina - Paso 2: Usuario autenticado:", req.user);
 
   // Validar campos requeridos
-  if (!grupoMuscular || !nombreEjercicio || !series || !repeticiones) {
+  if (!equipo || !nivelDeEquipo || !posicion) {
     console.log("Error: Faltan campos requeridos");
     return res.status(400).json({
-      mensaje:
-        "Faltan campos requeridos: grupoMuscular, nombreEjercicio, series y repeticiones son obligatorios",
+      mensaje: "Faltan campos requeridos: equipo, nivelDeEquipo y posicion son obligatorios",
     });
   }
 
@@ -43,10 +41,9 @@ exports.crearRutina = asyncHandler(async (req, res) => {
     req.user._id
   );
   const nuevaRutina = new Rutina({
-    grupoMuscular,
-    nombreEjercicio,
-    series,
-    repeticiones,
+    equipo,
+    nivelDeEquipo,
+    posicion,
     descripcion,
     creadoPor: req.user._id,
   });
@@ -81,14 +78,12 @@ exports.listarRutinas = asyncHandler(async (req, res) => {
 // @route   PUT /api/rutinas/:id
 // @access  Private (Admin)
 exports.actualizarRutina = asyncHandler(async (req, res) => {
-  const { grupoMuscular, nombreEjercicio, series, repeticiones, descripcion } =
-    req.body;
+  const { equipo, nivelDeEquipo, posicion, descripcion } = req.body;
 
   // Validar campos requeridos
-  if (!grupoMuscular || !nombreEjercicio || !series || !repeticiones) {
+  if (!equipo || !nivelDeEquipo || !posicion) {
     return res.status(400).json({
-      mensaje:
-        "Faltan campos requeridos: grupoMuscular, nombreEjercicio, series y repeticiones son obligatorios",
+      mensaje: "Faltan campos requeridos: equipo, nivelDeEquipo y posicion son obligatorios",
     });
   }
 
@@ -102,10 +97,9 @@ exports.actualizarRutina = asyncHandler(async (req, res) => {
   const rutinaActualizada = await Rutina.findByIdAndUpdate(
     req.params.id,
     {
-      grupoMuscular,
-      nombreEjercicio,
-      series,
-      repeticiones,
+      equipo,
+      nivelDeEquipo,
+      posicion,
       descripcion,
       creadoPor: req.user._id,
     },
@@ -157,9 +151,7 @@ exports.asignarRutina = asyncHandler(async (req, res) => {
     clienteId,
     numeroIdentificacion: cliente.numeroIdentificacion,
     rutinaId,
-    diasEntrenamiento: Array.isArray(diasEntrenamiento)
-      ? diasEntrenamiento
-      : [],
+    diasEntrenamiento: Array.isArray(diasEntrenamiento) ? diasEntrenamiento : [],
     diasDescanso: Array.isArray(diasDescanso) ? diasDescanso : [],
     asignadaPor: req.user._id,
   });
@@ -199,9 +191,7 @@ exports.actualizarAsignacionRutina = asyncHandler(async (req, res) => {
     {
       clienteId,
       rutinaId,
-      diasEntrenamiento: Array.isArray(diasEntrenamiento)
-        ? diasEntrenamiento
-        : [],
+      diasEntrenamiento: Array.isArray(diasEntrenamiento) ? diasEntrenamiento : [],
       diasDescanso: Array.isArray(diasDescanso) ? diasDescanso : [],
       asignadaPor: req.user._id,
     },
@@ -229,7 +219,7 @@ exports.eliminarAsignacionRutina = asyncHandler(async (req, res) => {
 });
 
 // @desc    Consultar rutinas asignadas por número de identificación
-// @route   GET /api/rutinas/consultar/:numeroIdentificacion
+// @route   GET /api/rutinas/consultarRutinasPorNumeroIdentificacion/:numeroIdentificacion
 // @access  Private (Admin, Entrenador, Cliente)
 exports.consultarRutinasPorNumeroIdentificacion = asyncHandler(
   async (req, res) => {
@@ -243,7 +233,7 @@ exports.consultarRutinasPorNumeroIdentificacion = asyncHandler(
       .populate("clienteId", "nombre apellido numeroIdentificacion")
       .populate(
         "rutinaId",
-        "grupoMuscular nombreEjercicio series repeticiones descripcion creadoPor"
+        "equipo nivelDeEquipo posicion descripcion creadoPor"
       )
       .populate("asignadaPor", "nombre");
 
