@@ -98,12 +98,12 @@ exports.actualizarRutina = asyncHandler(async (req, res) => {
 // @route   POST /api/rutinas/asignar
 // @access  Private (Admin, Entrenador)
 exports.asignarRutina = asyncHandler(async (req, res) => {
-  const { clienteId, categorizacion, diasEntrenamiento, diasDescanso } = req.body;
+  const { clienteId, categorizacion, diasEntrenamiento } = req.body;
 
-  if (!clienteId || !categorizacion || !diasEntrenamiento || !diasDescanso) {
+  if (!clienteId || !categorizacion || !diasEntrenamiento) {
     return res.status(400).json({
       mensaje:
-        "Faltan campos requeridos: clienteId, categorizacion, diasEntrenamiento y diasDescanso son obligatorios",
+        "Faltan campos requeridos: clienteId, categorizacion y diasEntrenamiento son obligatorios",
     });
   }
 
@@ -123,7 +123,6 @@ exports.asignarRutina = asyncHandler(async (req, res) => {
     numeroIdentificacion: cliente.numeroIdentificacion,
     categorizacion,
     diasEntrenamiento: Array.isArray(diasEntrenamiento) ? diasEntrenamiento : [],
-    diasDescanso: Array.isArray(diasDescanso) ? diasDescanso : [],
     asignadaPor: req.user._id,
   });
 
@@ -138,12 +137,12 @@ exports.asignarRutina = asyncHandler(async (req, res) => {
 // @route   PUT /api/rutinas/asignar/:id
 // @access  Private (Admin, Entrenador)
 exports.actualizarAsignacionRutina = asyncHandler(async (req, res) => {
-  const { clienteId, categorizacion, diasEntrenamiento, diasDescanso } = req.body;
+  const { clienteId, categorizacion, diasEntrenamiento } = req.body;
 
-  if (!clienteId || !categorizacion || !diasEntrenamiento || !diasDescanso) {
+  if (!clienteId || !categorizacion || !diasEntrenamiento) {
     return res.status(400).json({
       mensaje:
-        "Faltan campos requeridos: clienteId, categorizacion, diasEntrenamiento y diasDescanso son obligatorios",
+        "Faltan campos requeridos: clienteId, categorizacion y diasEntrenamiento son obligatorios",
     });
   }
 
@@ -159,7 +158,6 @@ exports.actualizarAsignacionRutina = asyncHandler(async (req, res) => {
       clienteId,
       categorizacion,
       diasEntrenamiento: Array.isArray(diasEntrenamiento) ? diasEntrenamiento : [],
-      diasDescanso: Array.isArray(diasDescanso) ? diasDescanso : [],
       asignadaPor: req.user._id,
     },
     { new: true }
@@ -208,9 +206,6 @@ exports.consultarRutinasPorNumeroIdentificacion = asyncHandler(
       ...asignacion.toObject(),
       diasEntrenamiento: Array.isArray(asignacion.diasEntrenamiento)
         ? asignacion.diasEntrenamiento
-        : [],
-      diasDescanso: Array.isArray(asignacion.diasDescanso)
-        ? asignacion.diasDescanso
         : [],
     }));
 
