@@ -2,7 +2,9 @@ const mongoose = require("mongoose");
 
 const entrenadorSchema = new mongoose.Schema({
   nombre: { type: String, required: true },
+  apellido: { type: String }, // Opcional
   correo: { type: String, required: true, unique: true },
+  telefono: { type: String }, // Opcional
   especialidad: { type: String, required: true }, // Ej: "Gimnasia (DULCE)"
   diasHorarios: {
     type: [
