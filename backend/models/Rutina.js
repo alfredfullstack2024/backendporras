@@ -15,7 +15,6 @@ const rutinaSchema = new mongoose.Schema(
       ref: "Usuario",
       required: true,
     },
-    categorizacion: { type: String, required: true },
   },
   { timestamps: true }
 );
