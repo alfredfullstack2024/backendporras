@@ -1,4 +1,6 @@
 const Rutina = require("../models/Rutina");
+const RutinaAsignada = require("../models/RutinaAsignada");
+const Cliente = require("../models/Cliente");
 const Entrenador = require("../models/Entrenador");
 const asyncHandler = require("express-async-handler");
 
@@ -46,4 +48,159 @@ exports.crearRutina = asyncHandler(async (req, res) => {
   res.status(201).json({ mensaje: "Rutina creada con éxito", rutina: rutinaCreada });
 });
 
-// Resto de los métodos (listarRutinas, actualizarRutina) permanecen sin cambios...
+// @desc    Listar todas las rutinas
+// @route   GET /api/rutinas
+// @access  Private (Admin, Entrenador)
+exports.listarRutinas = asyncHandler(async (req, res) => {
+  const rutinas = await Rutina.find().populate({
+    path: "creadoPor",
+    select: "nombre",
+    strictPopulate: false,
+  });
+  res.json(rutinas);
+});
+
+// @desc    Actualizar una rutina
+// @route   PUT /api/rutinas/:id
+// @access  Private (Admin)
+exports.actualizarRutina = asyncHandler(async (req, res) => {
+  const { equipo, nivelDeEquipo, posicion, descripcion } = req.body;
+
+  if (!equipo || !nivelDeEquipo || !posicion) {
+    return res.status(400).json({
+      mensaje: "Faltan campos requeridos: equipo, nivelDeEquipo y posicion son obligatorios",
+    });
+  }
+
+  if (!req.user || !req.user._id) {
+    return res.status(401).json({
+      mensaje: "No autorizado: Usuario no autenticado o ID no disponible",
+    });
+  }
+
+  const rutinaActualizada = await Rutina.findByIdAndUpdate(
+    req.params.id,
+    {
+      equipo,
+      nivelDeEquipo,
+      posicion,
+      descripcion,
+      creadoPor: req.user._id,
+    },
+    { new: true }
+  );
+
+  if (!rutinaActualizada) {
+    return res.status(404).json({ mensaje: "Rutina no encontrada" });
+  }
+
+  res.json({
+    mensaje: "Rutina actualizada con éxito",
+    rutina: rutinaActualizada,
+  });
+});
+
+// @desc    Asignar una rutina a un cliente
+// @route   POST /api/rutinas/asignar
+// @access  Private (Admin, Entrenador)
+exports.asignarRutina = asyncHandler(async (req, res) => {
+  const { clienteId, equipo, posicion } = req.body;
+
+  if (!clienteId || !equipo || !posicion) {
+    return res.status(400).json({
+      mensaje: "Faltan campos requeridos: clienteId, equipo y posicion son obligatorios",
+    });
+  }
+
+  if (!req.user || !req.user._id) {
+    return res.status(401).json({
+      mensaje: "No autorizado: Usuario no autenticado o ID no disponible",
+    });
+  }
+
+  const cliente = await Cliente.findById(clienteId);
+  if (!cliente) {
+    return res.status(404).json({ mensaje: "Cliente no encontrado" });
+  }
+
+  const entrenador = await Entrenador.findOne({ especialidad: new RegExp(`${equipo}$`) });
+  if (!entrenador) {
+    return res.status(404).json({ mensaje: "Equipo no encontrado en entrenadores" });
+  }
+
+  const diasHorarios = entrenador.diasHorarios.map(d => `${d.dia} ${d.horario}`).join(", ");
+
+  const rutinaAsignada = new RutinaAsignada({
+    clienteId,
+    numeroIdentificacion: cliente.numeroIdentificacion,
+    equipo,
+    posicion,
+    diasHorarios,
+    asignadaPor: req.user._id,
+  });
+
+  const asignacionCreada = await rutinaAsignada.save();
+  res.status(201).json({
+    mensaje: "Rutina asignada con éxito",
+    rutinaAsignada: asignacionCreada,
+  });
+});
+
+// @desc    Actualizar una asignación de rutina
+// @route   PUT /api/rutinas/asignar/:id
+// @access  Private (Admin, Entrenador)
+exports.actualizarAsignacionRutina = asyncHandler(async (req, res) => {
+  const { clienteId, equipo, posicion } = req.body;
+
+  if (!clienteId || !equipo || !posicion) {
+    return res.status(400).json({
+      mensaje: "Faltan campos requeridos: clienteId, equipo y posicion son obligatorios",
+    });
+  }
+
+  if (!req.user || !req.user._id) {
+    return res.status(401).json({
+      mensaje: "No autorizado: Usuario no autenticado o ID no disponible",
+    });
+  }
+
+  const entrenador = await Entrenador.findOne({ especialidad: new RegExp(`${equipo}$`) });
+  if (!entrenador) {
+    return res.status(404).json({ mensaje: "Equipo no encontrado en entrenadores" });
+  }
+
+  const diasHorarios = entrenador.diasHorarios.map(d => `${d.dia} ${d.horario}`).join(", ");
+
+  const rutinaAsignada = await RutinaAsignada.findByIdAndUpdate(
+    req.params.id,
+    {
+      clienteId,
+      equipo,
+      posicion,
+      diasHorarios,
+      asignadaPor: req.user._id,
+    },
+    { new: true }
+  );
+
+  if (!rutinaAsignada) {
+    return res.status(404).json({ mensaje: "Asignación no encontrada" });
+  }
+
+  res.json({ mensaje: "Asignación actualizada con éxito", rutinaAsignada });
+});
+
+// @desc    Eliminar una asignación de rutina
+// @route   DELETE /api/rutinas/asignar/:id
+// @access  Private (Admin)
+exports.eliminarAsignacionRutina = asyncHandler(async (req, res) => {
+  const rutinaAsignada = await RutinaAsignada.findByIdAndDelete(req.params.id);
+
+  if (!rutinaAsignada) {
+    return res.status(404).json({ mensaje: "Asignación no encontrada" });
+  }
+
+  res.json({ mensaje: "Asignación eliminada con éxito" });
+});
+
+// @desc    Consult
