@@ -104,8 +104,7 @@ exports.asignarRutina = asyncHandler(async (req, res) => {
 
   if (!clienteId || !categorizacion || !diasEntrenamiento) {
     return res.status(400).json({
-      mensaje:
-        "Faltan campos requeridos: clienteId, categorizacion y diasEntrenamiento son obligatorios",
+      mensaje: "Faltan campos requeridos: clienteId, categorizacion y diasEntrenamiento son obligatorios",
     });
   }
 
@@ -143,8 +142,7 @@ exports.actualizarAsignacionRutina = asyncHandler(async (req, res) => {
 
   if (!clienteId || !categorizacion || !diasEntrenamiento) {
     return res.status(400).json({
-      mensaje:
-        "Faltan campos requeridos: clienteId, categorizacion y diasEntrenamiento son obligatorios",
+      mensaje: "Faltan campos requeridos: clienteId, categorizacion y diasEntrenamiento son obligatorios",
     });
   }
 
