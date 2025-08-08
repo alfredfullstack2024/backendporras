@@ -26,23 +26,15 @@ const agregarEntrenador = async (req, res) => {
 
     const { nombre, apellido, correo, telefono, especialidad, clases } = req.body;
 
-    if (!nombre || !correo || !especialidad || !clases || !clases.length) {
+    if (!nombre || !apellido || !correo) {
       return res
         .status(400)
-        .json({ mensaje: "Nombre, correo, especialidad y al menos una clase son requeridos" });
+        .json({ mensaje: "Nombre, apellido y correo son requeridos" });
     }
 
     if (!req.user || !req.user._id) {
       return res.status(401).json({ mensaje: "Usuario no autenticado" });
     }
-
-    // Transformar clases.dias en diasHorarios
-    const diasHorarios = clases.flatMap(clase =>
-      clase.dias.map(dia => ({
-        dia: dia.dia,
-        horario: `${dia.horarioInicio}-${dia.horarioFin}`,
-      }))
-    );
 
     const entrenador = new Entrenador({
       nombre,
@@ -50,7 +42,7 @@ const agregarEntrenador = async (req, res) => {
       correo,
       telefono,
       especialidad,
-      diasHorarios,
+      clases: clases || [{ nombreClase: "", dias: [], capacidadMaxima: 10 }],
       creadoPor: req.user._id,
     });
 
@@ -76,6 +68,7 @@ const obtenerEntrenadorPorId = async (req, res) => {
       console.log("Entrenador no encontrado para el ID:", req.params.id);
       return res.status(404).json({ mensaje: "Entrenador no encontrado" });
     }
+    // Asegurarse de que las clases estén completamente resueltas
     console.log("Entrenador encontrado:", entrenador);
     res.json(entrenador);
   } catch (error) {
@@ -100,13 +93,6 @@ const editarEntrenador = async (req, res) => {
       return res.status(404).json({ mensaje: "Entrenador no encontrado" });
     }
 
-    const diasHorarios = clases ? clases.flatMap(clase =>
-      clase.dias.map(dia => ({
-        dia: dia.dia,
-        horario: `${dia.horarioInicio}-${dia.horarioFin}`,
-      }))
-    ) : entrenador.diasHorarios;
-
     const updatedEntrenador = await Entrenador.findByIdAndUpdate(
       req.params.id,
       {
@@ -115,7 +101,7 @@ const editarEntrenador = async (req, res) => {
         correo,
         telefono,
         especialidad,
-        diasHorarios,
+        clases: clases || entrenador.clases, // Mantener clases existentes si no se envían nuevas
         updatedAt: new Date(),
       },
       { new: true, runValidators: true, lean: true }
