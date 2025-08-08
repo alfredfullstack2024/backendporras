@@ -24,17 +24,26 @@ const agregarEntrenador = async (req, res) => {
     console.log("Datos recibidos:", req.body);
     console.log("Usuario autenticado:", req.user);
 
-    const { nombre, apellido, correo, telefono, especialidad, clases } = req.body;
+    const { nombre, apellido, correo, telefono, especialidad, diasHorarios } = req.body;
 
-    if (!nombre || !apellido || !correo) {
-      return res
-        .status(400)
-        .json({ mensaje: "Nombre, apellido y correo son requeridos" });
+    if (!nombre || !apellido || !correo || !especialidad || !Array.isArray(diasHorarios) || diasHorarios.length === 0) {
+      return res.status(400).json({
+        mensaje: "Nombre, apellido, correo, especialidad y al menos un día/horario son requeridos",
+      });
     }
 
     if (!req.user || !req.user._id) {
       return res.status(401).json({ mensaje: "Usuario no autenticado" });
     }
+
+    // Validar que cada día/horario tenga los campos requeridos
+    diasHorarios.forEach((dh, index) => {
+      if (!dh.dia || !dh.horario) {
+        return res.status(400).json({
+          mensaje: `Día/Horario inválido en índice ${index}: ambos campos son requeridos`,
+        });
+      }
+    });
 
     const entrenador = new Entrenador({
       nombre,
@@ -42,13 +51,13 @@ const agregarEntrenador = async (req, res) => {
       correo,
       telefono,
       especialidad,
-      clases: clases || [{ nombreClase: "", dias: [], capacidadMaxima: 10 }],
+      diasHorarios,
       creadoPor: req.user._id,
     });
 
     const savedEntrenador = await entrenador.save();
-    console.log("Entrenador guardado:", savedEntrenador);
-    res.status(201).json(savedEntrenador);
+    console.log("Entrenador guardado en MongoDB:", savedEntrenador);
+    res.status(201).json({ mensaje: "Entrenador creado con éxito", entrenador: savedEntrenador });
   } catch (error) {
     console.error("Error al agregar entrenador:", error.message, error.stack);
     res.status(500).json({
@@ -68,7 +77,6 @@ const obtenerEntrenadorPorId = async (req, res) => {
       console.log("Entrenador no encontrado para el ID:", req.params.id);
       return res.status(404).json({ mensaje: "Entrenador no encontrado" });
     }
-    // Asegurarse de que las clases estén completamente resueltas
     console.log("Entrenador encontrado:", entrenador);
     res.json(entrenador);
   } catch (error) {
@@ -85,7 +93,7 @@ const editarEntrenador = async (req, res) => {
   try {
     console.log("Iniciando editarEntrenador...");
     console.log("Datos recibidos para editar:", req.body);
-    const { nombre, apellido, correo, telefono, especialidad, clases } = req.body;
+    const { nombre, apellido, correo, telefono, especialidad, diasHorarios } = req.body;
 
     const entrenador = await Entrenador.findById(req.params.id);
     if (!entrenador) {
@@ -101,7 +109,7 @@ const editarEntrenador = async (req, res) => {
         correo,
         telefono,
         especialidad,
-        clases: clases || entrenador.clases, // Mantener clases existentes si no se envían nuevas
+        diasHorarios: diasHorarios || entrenador.diasHorarios,
         updatedAt: new Date(),
       },
       { new: true, runValidators: true, lean: true }
@@ -110,11 +118,7 @@ const editarEntrenador = async (req, res) => {
     console.log("Entrenador actualizado:", updatedEntrenador);
     res.json(updatedEntrenador);
   } catch (error) {
-    console.error(
-      "Error al actualizar entrenador:",
-      error.message,
-      error.stack
-    );
+    console.error("Error al actualizar entrenador:", error.message, error.stack);
     res.status(500).json({
       mensaje: "Error al actualizar entrenador",
       detalle: error.message,
