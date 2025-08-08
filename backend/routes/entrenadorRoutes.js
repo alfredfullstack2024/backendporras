@@ -14,5 +14,5 @@ router.get("/:id", protect, obtenerEntrenadorPorId);
 router.put("/:id", protect, editarEntrenador);
 router.post("/", protect, agregarEntrenador);
 router.delete("/:id", protect, eliminarEntrenador);
-
+    
 module.exports = router;
