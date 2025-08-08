@@ -12,7 +12,6 @@ exports.crearRutina = asyncHandler(async (req, res) => {
   console.log("Creando rutina - Paso 1: Datos recibidos:", req.body);
   console.log("Creando rutina - Paso 2: Usuario autenticado:", req.user);
 
-  // Validar campos requeridos
   if (!equipo || !nivelDeEquipo || !posicion) {
     console.log("Error: Faltan campos requeridos");
     return res.status(400).json({
@@ -20,26 +19,14 @@ exports.crearRutina = asyncHandler(async (req, res) => {
     });
   }
 
-  // Validar que req.user exista
-  console.log("Creando rutina - Paso 3: Verificando usuario:", req.user);
-  console.log(
-    "Creando rutina - Paso 3.5: Estado final de req.user antes de validación:",
-    req.user
-  );
   if (!req.user || !req.user._id) {
-    console.log(
-      "Error: Usuario no autenticado o ID no disponible - Detalle:",
-      req.user
-    );
+    console.log("Error: Usuario no autenticado o ID no disponible - Detalle:", req.user);
     return res.status(401).json({
       mensaje: "No autorizado: Usuario no autenticado o ID no disponible",
     });
   }
 
-  console.log(
-    "Creando rutina - Paso 4: Preparando nueva rutina con creadoPor:",
-    req.user._id
-  );
+  console.log("Creando rutina - Paso 4: Preparando nueva rutina con creadoPor:", req.user._id);
   const nuevaRutina = new Rutina({
     equipo,
     nivelDeEquipo,
@@ -48,18 +35,11 @@ exports.crearRutina = asyncHandler(async (req, res) => {
     creadoPor: req.user._id,
   });
 
-  console.log(
-    "Creando rutina - Paso 5: Validando modelo antes de guardar:",
-    nuevaRutina.validateSync()
-  );
-  console.log(
-    "Creando rutina - Paso 6: Guardando rutina en la base de datos..."
-  );
+  console.log("Creando rutina - Paso 5: Validando modelo antes de guardar:", nuevaRutina.validateSync());
+  console.log("Creando rutina - Paso 6: Guardando rutina en la base de datos...");
   const rutinaCreada = await nuevaRutina.save();
   console.log("Creando rutina - Paso 7: Rutina guardada:", rutinaCreada);
-  res
-    .status(201)
-    .json({ mensaje: "Rutina creada con éxito", rutina: rutinaCreada });
+  res.status(201).json({ mensaje: "Rutina creada con éxito", rutina: rutinaCreada });
 });
 
 // @desc    Listar todas las rutinas
@@ -80,14 +60,12 @@ exports.listarRutinas = asyncHandler(async (req, res) => {
 exports.actualizarRutina = asyncHandler(async (req, res) => {
   const { equipo, nivelDeEquipo, posicion, descripcion } = req.body;
 
-  // Validar campos requeridos
   if (!equipo || !nivelDeEquipo || !posicion) {
     return res.status(400).json({
       mensaje: "Faltan campos requeridos: equipo, nivelDeEquipo y posicion son obligatorios",
     });
   }
 
-  // Validar que req.user exista
   if (!req.user || !req.user._id) {
     return res.status(401).json({
       mensaje: "No autorizado: Usuario no autenticado o ID no disponible",
@@ -122,7 +100,6 @@ exports.actualizarRutina = asyncHandler(async (req, res) => {
 exports.asignarRutina = asyncHandler(async (req, res) => {
   const { clienteId, categorizacion, diasEntrenamiento, diasDescanso } = req.body;
 
-  // Validar campos requeridos
   if (!clienteId || !categorizacion || !diasEntrenamiento || !diasDescanso) {
     return res.status(400).json({
       mensaje:
@@ -130,7 +107,6 @@ exports.asignarRutina = asyncHandler(async (req, res) => {
     });
   }
 
-  // Validar que req.user exista
   if (!req.user || !req.user._id) {
     return res.status(401).json({
       mensaje: "No autorizado: Usuario no autenticado o ID no disponible",
@@ -152,12 +128,10 @@ exports.asignarRutina = asyncHandler(async (req, res) => {
   });
 
   const asignacionCreada = await rutinaAsignada.save();
-  res
-    .status(201)
-    .json({
-      mensaje: "Rutina asignada con éxito",
-      rutinaAsignada: asignacionCreada,
-    });
+  res.status(201).json({
+    mensaje: "Rutina asignada con éxito",
+    rutinaAsignada: asignacionCreada,
+  });
 });
 
 // @desc    Actualizar una asignación de rutina
@@ -166,7 +140,6 @@ exports.asignarRutina = asyncHandler(async (req, res) => {
 exports.actualizarAsignacionRutina = asyncHandler(async (req, res) => {
   const { clienteId, categorizacion, diasEntrenamiento, diasDescanso } = req.body;
 
-  // Validar campos requeridos
   if (!clienteId || !categorizacion || !diasEntrenamiento || !diasDescanso) {
     return res.status(400).json({
       mensaje:
@@ -174,7 +147,6 @@ exports.actualizarAsignacionRutina = asyncHandler(async (req, res) => {
     });
   }
 
-  // Validar que req.user exista
   if (!req.user || !req.user._id) {
     return res.status(401).json({
       mensaje: "No autorizado: Usuario no autenticado o ID no disponible",
@@ -218,10 +190,7 @@ exports.eliminarAsignacionRutina = asyncHandler(async (req, res) => {
 // @access  Private (Admin, Entrenador, Cliente)
 exports.consultarRutinasPorNumeroIdentificacion = asyncHandler(
   async (req, res) => {
-    console.log(
-      "Número de identificación recibido:",
-      req.params.numeroIdentificacion
-    );
+    console.log("Número de identificación recibido:", req.params.numeroIdentificacion);
     const rutinasAsignadas = await RutinaAsignada.find({
       numeroIdentificacion: req.params.numeroIdentificacion,
     })
