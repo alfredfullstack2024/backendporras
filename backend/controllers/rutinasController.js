@@ -203,4 +203,25 @@ exports.eliminarAsignacionRutina = asyncHandler(async (req, res) => {
   res.json({ mensaje: "Asignación eliminada con éxito" });
 });
 
-// @desc    Consult
+// @desc    Consultar rutinas asignadas por número de identificación
+// @route   GET /api/rutinas/consultarRutinasPorNumeroIdentificacion/:numeroIdentificacion
+// @access  Private (Admin, Entrenador, Cliente)
+exports.consultarRutinasPorNumeroIdentificacion = asyncHandler(
+  async (req, res) => {
+    console.log("Número de identificación recibido:", req.params.numeroIdentificacion);
+    const rutinasAsignadas = await RutinaAsignada.find({
+      numeroIdentificacion: req.params.numeroIdentificacion,
+    })
+      .populate("clienteId", "nombre apellido numeroIdentificacion")
+      .populate("asignadaPor", "nombre");
+
+    console.log("Rutinas asignadas encontradas:", rutinasAsignadas);
+    if (!rutinasAsignadas || rutinasAsignadas.length === 0) {
+      return res.status(404).json({
+        mensaje: "No se encontraron rutinas asignadas para este cliente",
+      });
+    }
+
+    res.json(rutinasAsignadas);
+  }
+);
