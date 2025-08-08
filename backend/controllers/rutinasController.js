@@ -120,13 +120,13 @@ exports.actualizarRutina = asyncHandler(async (req, res) => {
 // @route   POST /api/rutinas/asignar
 // @access  Private (Admin, Entrenador)
 exports.asignarRutina = asyncHandler(async (req, res) => {
-  const { clienteId, rutinaId, diasEntrenamiento, diasDescanso } = req.body;
+  const { clienteId, categorizacion, diasEntrenamiento, diasDescanso } = req.body;
 
   // Validar campos requeridos
-  if (!clienteId || !rutinaId || !diasEntrenamiento || !diasDescanso) {
+  if (!clienteId || !categorizacion || !diasEntrenamiento || !diasDescanso) {
     return res.status(400).json({
       mensaje:
-        "Faltan campos requeridos: clienteId, rutinaId, diasEntrenamiento y diasDescanso son obligatorios",
+        "Faltan campos requeridos: clienteId, categorizacion, diasEntrenamiento y diasDescanso son obligatorios",
     });
   }
 
@@ -142,15 +142,10 @@ exports.asignarRutina = asyncHandler(async (req, res) => {
     return res.status(404).json({ mensaje: "Cliente no encontrado" });
   }
 
-  const rutina = await Rutina.findById(rutinaId);
-  if (!rutina) {
-    return res.status(404).json({ mensaje: "Rutina no encontrada" });
-  }
-
   const rutinaAsignada = new RutinaAsignada({
     clienteId,
     numeroIdentificacion: cliente.numeroIdentificacion,
-    rutinaId,
+    categorizacion,
     diasEntrenamiento: Array.isArray(diasEntrenamiento) ? diasEntrenamiento : [],
     diasDescanso: Array.isArray(diasDescanso) ? diasDescanso : [],
     asignadaPor: req.user._id,
@@ -169,13 +164,13 @@ exports.asignarRutina = asyncHandler(async (req, res) => {
 // @route   PUT /api/rutinas/asignar/:id
 // @access  Private (Admin, Entrenador)
 exports.actualizarAsignacionRutina = asyncHandler(async (req, res) => {
-  const { clienteId, rutinaId, diasEntrenamiento, diasDescanso } = req.body;
+  const { clienteId, categorizacion, diasEntrenamiento, diasDescanso } = req.body;
 
   // Validar campos requeridos
-  if (!clienteId || !rutinaId || !diasEntrenamiento || !diasDescanso) {
+  if (!clienteId || !categorizacion || !diasEntrenamiento || !diasDescanso) {
     return res.status(400).json({
       mensaje:
-        "Faltan campos requeridos: clienteId, rutinaId, diasEntrenamiento y diasDescanso son obligatorios",
+        "Faltan campos requeridos: clienteId, categorizacion, diasEntrenamiento y diasDescanso son obligatorios",
     });
   }
 
@@ -190,7 +185,7 @@ exports.actualizarAsignacionRutina = asyncHandler(async (req, res) => {
     req.params.id,
     {
       clienteId,
-      rutinaId,
+      categorizacion,
       diasEntrenamiento: Array.isArray(diasEntrenamiento) ? diasEntrenamiento : [],
       diasDescanso: Array.isArray(diasDescanso) ? diasDescanso : [],
       asignadaPor: req.user._id,
@@ -231,10 +226,6 @@ exports.consultarRutinasPorNumeroIdentificacion = asyncHandler(
       numeroIdentificacion: req.params.numeroIdentificacion,
     })
       .populate("clienteId", "nombre apellido numeroIdentificacion")
-      .populate(
-        "rutinaId",
-        "equipo nivelDeEquipo posicion descripcion creadoPor"
-      )
       .populate("asignadaPor", "nombre");
 
     console.log("Rutinas asignadas encontradas:", rutinasAsignadas);
