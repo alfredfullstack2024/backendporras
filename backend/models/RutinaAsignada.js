@@ -10,9 +10,8 @@ const RutinaAsignadaSchema = new mongoose.Schema({
     type: String,
     required: true,
   },
-  rutinaId: {
-    type: mongoose.Schema.Types.ObjectId,
-    ref: "Rutina",
+  categorizacion: {
+    type: String,
     required: true,
   },
   diasEntrenamiento: {
