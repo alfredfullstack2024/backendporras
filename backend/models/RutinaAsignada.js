@@ -14,8 +14,13 @@ const RutinaAsignadaSchema = new mongoose.Schema({
     type: String,
     required: true,
   },
-  diasEntrenamiento: {
-    type: [String],
+  posicion: {
+    type: String,
+    required: true,
+    enum: ["Flyer", "Base", "Spotter"],
+  },
+  diasHorarios: {
+    type: String, // Ej: "Lunes 10:00-12:00, Miércoles 14:00-16:00"
     required: true,
   },
   asignadaPor: {
