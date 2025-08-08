@@ -1,7 +1,6 @@
 const Rutina = require("../models/Rutina");
 const RutinaAsignada = require("../models/RutinaAsignada");
 const Cliente = require("../models/Cliente");
-const Entrenador = require("../models/Entrenador");
 const asyncHandler = require("express-async-handler");
 
 // @desc    Crear una nueva rutina
@@ -13,6 +12,7 @@ exports.crearRutina = asyncHandler(async (req, res) => {
   console.log("Creando rutina - Paso 1: Datos recibidos:", req.body);
   console.log("Creando rutina - Paso 2: Usuario autenticado:", req.user);
 
+  // Validar campos requeridos
   if (!equipo || !nivelDeEquipo || !posicion) {
     console.log("Error: Faltan campos requeridos");
     return res.status(400).json({
@@ -20,19 +20,26 @@ exports.crearRutina = asyncHandler(async (req, res) => {
     });
   }
 
-  const equiposValidos = await Entrenador.distinct("especialidad").map(e => e.split(" (")[1].replace(")", ""));
-  if (!equiposValidos.includes(equipo)) {
-    return res.status(400).json({ mensaje: "Equipo no registrado por un entrenador" });
-  }
-
+  // Validar que req.user exista
+  console.log("Creando rutina - Paso 3: Verificando usuario:", req.user);
+  console.log(
+    "Creando rutina - Paso 3.5: Estado final de req.user antes de validación:",
+    req.user
+  );
   if (!req.user || !req.user._id) {
-    console.log("Error: Usuario no autenticado o ID no disponible - Detalle:", req.user);
+    console.log(
+      "Error: Usuario no autenticado o ID no disponible - Detalle:",
+      req.user
+    );
     return res.status(401).json({
       mensaje: "No autorizado: Usuario no autenticado o ID no disponible",
     });
   }
 
-  console.log("Creando rutina - Paso 4: Preparando nueva rutina con creadoPor:", req.user._id);
+  console.log(
+    "Creando rutina - Paso 4: Preparando nueva rutina con creadoPor:",
+    req.user._id
+  );
   const nuevaRutina = new Rutina({
     equipo,
     nivelDeEquipo,
@@ -41,11 +48,18 @@ exports.crearRutina = asyncHandler(async (req, res) => {
     creadoPor: req.user._id,
   });
 
-  console.log("Creando rutina - Paso 5: Validando modelo antes de guardar:", nuevaRutina.validateSync());
-  console.log("Creando rutina - Paso 6: Guardando rutina en la base de datos...");
+  console.log(
+    "Creando rutina - Paso 5: Validando modelo antes de guardar:",
+    nuevaRutina.validateSync()
+  );
+  console.log(
+    "Creando rutina - Paso 6: Guardando rutina en la base de datos..."
+  );
   const rutinaCreada = await nuevaRutina.save();
   console.log("Creando rutina - Paso 7: Rutina guardada:", rutinaCreada);
-  res.status(201).json({ mensaje: "Rutina creada con éxito", rutina: rutinaCreada });
+  res
+    .status(201)
+    .json({ mensaje: "Rutina creada con éxito", rutina: rutinaCreada });
 });
 
 // @desc    Listar todas las rutinas
@@ -66,12 +80,14 @@ exports.listarRutinas = asyncHandler(async (req, res) => {
 exports.actualizarRutina = asyncHandler(async (req, res) => {
   const { equipo, nivelDeEquipo, posicion, descripcion } = req.body;
 
+  // Validar campos requeridos
   if (!equipo || !nivelDeEquipo || !posicion) {
     return res.status(400).json({
       mensaje: "Faltan campos requeridos: equipo, nivelDeEquipo y posicion son obligatorios",
     });
   }
 
+  // Validar que req.user exista
   if (!req.user || !req.user._id) {
     return res.status(401).json({
       mensaje: "No autorizado: Usuario no autenticado o ID no disponible",
@@ -104,14 +120,17 @@ exports.actualizarRutina = asyncHandler(async (req, res) => {
 // @route   POST /api/rutinas/asignar
 // @access  Private (Admin, Entrenador)
 exports.asignarRutina = asyncHandler(async (req, res) => {
-  const { clienteId, equipo, posicion } = req.body;
+  const { clienteId, rutinaId, diasEntrenamiento, diasDescanso } = req.body;
 
-  if (!clienteId || !equipo || !posicion) {
+  // Validar campos requeridos
+  if (!clienteId || !rutinaId || !diasEntrenamiento || !diasDescanso) {
     return res.status(400).json({
-      mensaje: "Faltan campos requeridos: clienteId, equipo y posicion son obligatorios",
+      mensaje:
+        "Faltan campos requeridos: clienteId, rutinaId, diasEntrenamiento y diasDescanso son obligatorios",
     });
   }
 
+  // Validar que req.user exista
   if (!req.user || !req.user._id) {
     return res.status(401).json({
       mensaje: "No autorizado: Usuario no autenticado o ID no disponible",
@@ -123,61 +142,57 @@ exports.asignarRutina = asyncHandler(async (req, res) => {
     return res.status(404).json({ mensaje: "Cliente no encontrado" });
   }
 
-  const entrenador = await Entrenador.findOne({ especialidad: new RegExp(`${equipo}$`) });
-  if (!entrenador) {
-    return res.status(404).json({ mensaje: "Equipo no encontrado en entrenadores" });
+  const rutina = await Rutina.findById(rutinaId);
+  if (!rutina) {
+    return res.status(404).json({ mensaje: "Rutina no encontrada" });
   }
-
-  const diasHorarios = entrenador.diasHorarios.map(d => `${d.dia} ${d.horario}`).join(", ");
 
   const rutinaAsignada = new RutinaAsignada({
     clienteId,
     numeroIdentificacion: cliente.numeroIdentificacion,
-    equipo,
-    posicion,
-    diasHorarios,
+    rutinaId,
+    diasEntrenamiento: Array.isArray(diasEntrenamiento) ? diasEntrenamiento : [],
+    diasDescanso: Array.isArray(diasDescanso) ? diasDescanso : [],
     asignadaPor: req.user._id,
   });
 
   const asignacionCreada = await rutinaAsignada.save();
-  res.status(201).json({
-    mensaje: "Rutina asignada con éxito",
-    rutinaAsignada: asignacionCreada,
-  });
+  res
+    .status(201)
+    .json({
+      mensaje: "Rutina asignada con éxito",
+      rutinaAsignada: asignacionCreada,
+    });
 });
 
 // @desc    Actualizar una asignación de rutina
 // @route   PUT /api/rutinas/asignar/:id
 // @access  Private (Admin, Entrenador)
 exports.actualizarAsignacionRutina = asyncHandler(async (req, res) => {
-  const { clienteId, equipo, posicion } = req.body;
+  const { clienteId, rutinaId, diasEntrenamiento, diasDescanso } = req.body;
 
-  if (!clienteId || !equipo || !posicion) {
+  // Validar campos requeridos
+  if (!clienteId || !rutinaId || !diasEntrenamiento || !diasDescanso) {
     return res.status(400).json({
-      mensaje: "Faltan campos requeridos: clienteId, equipo y posicion son obligatorios",
+      mensaje:
+        "Faltan campos requeridos: clienteId, rutinaId, diasEntrenamiento y diasDescanso son obligatorios",
     });
   }
 
+  // Validar que req.user exista
   if (!req.user || !req.user._id) {
     return res.status(401).json({
       mensaje: "No autorizado: Usuario no autenticado o ID no disponible",
     });
   }
 
-  const entrenador = await Entrenador.findOne({ especialidad: new RegExp(`${equipo}$`) });
-  if (!entrenador) {
-    return res.status(404).json({ mensaje: "Equipo no encontrado en entrenadores" });
-  }
-
-  const diasHorarios = entrenador.diasHorarios.map(d => `${d.dia} ${d.horario}`).join(", ");
-
   const rutinaAsignada = await RutinaAsignada.findByIdAndUpdate(
     req.params.id,
     {
       clienteId,
-      equipo,
-      posicion,
-      diasHorarios,
+      rutinaId,
+      diasEntrenamiento: Array.isArray(diasEntrenamiento) ? diasEntrenamiento : [],
+      diasDescanso: Array.isArray(diasDescanso) ? diasDescanso : [],
       asignadaPor: req.user._id,
     },
     { new: true }
@@ -208,11 +223,18 @@ exports.eliminarAsignacionRutina = asyncHandler(async (req, res) => {
 // @access  Private (Admin, Entrenador, Cliente)
 exports.consultarRutinasPorNumeroIdentificacion = asyncHandler(
   async (req, res) => {
-    console.log("Número de identificación recibido:", req.params.numeroIdentificacion);
+    console.log(
+      "Número de identificación recibido:",
+      req.params.numeroIdentificacion
+    );
     const rutinasAsignadas = await RutinaAsignada.find({
       numeroIdentificacion: req.params.numeroIdentificacion,
     })
       .populate("clienteId", "nombre apellido numeroIdentificacion")
+      .populate(
+        "rutinaId",
+        "equipo nivelDeEquipo posicion descripcion creadoPor"
+      )
       .populate("asignadaPor", "nombre");
 
     console.log("Rutinas asignadas encontradas:", rutinasAsignadas);
@@ -222,6 +244,17 @@ exports.consultarRutinasPorNumeroIdentificacion = asyncHandler(
       });
     }
 
-    res.json(rutinasAsignadas);
+    const safeRutinasAsignadas = rutinasAsignadas.map((asignacion) => ({
+      ...asignacion.toObject(),
+      diasEntrenamiento: Array.isArray(asignacion.diasEntrenamiento)
+        ? asignacion.diasEntrenamiento
+        : [],
+      diasDescanso: Array.isArray(asignacion.diasDescanso)
+        ? asignacion.diasDescanso
+        : [],
+    }));
+
+    console.log("Datos devueltos por el endpoint:", safeRutinasAsignadas);
+    res.json(safeRutinasAsignadas);
   }
 );
