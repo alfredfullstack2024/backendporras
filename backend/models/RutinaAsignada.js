@@ -10,7 +10,7 @@ const RutinaAsignadaSchema = new mongoose.Schema({
     type: String,
     required: true,
   },
-  categorizacion: {
+  equipo: {
     type: String,
     required: true,
   },
