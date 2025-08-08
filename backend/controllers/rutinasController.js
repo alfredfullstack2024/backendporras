@@ -7,15 +7,15 @@ const asyncHandler = require("express-async-handler");
 // @route   POST /api/rutinas
 // @access  Private (Admin)
 exports.crearRutina = asyncHandler(async (req, res) => {
-  const { equipo, nivelDeEquipo, posicion, descripcion } = req.body;
+  const { equipo, nivelDeEquipo, posicion, descripcion, categorizacion } = req.body;
 
   console.log("Creando rutina - Paso 1: Datos recibidos:", req.body);
   console.log("Creando rutina - Paso 2: Usuario autenticado:", req.user);
 
-  if (!equipo || !nivelDeEquipo || !posicion) {
+  if (!equipo || !nivelDeEquipo || !posicion || !categorizacion) {
     console.log("Error: Faltan campos requeridos");
     return res.status(400).json({
-      mensaje: "Faltan campos requeridos: equipo, nivelDeEquipo y posicion son obligatorios",
+      mensaje: "Faltan campos requeridos: equipo, nivelDeEquipo, posicion y categorizacion son obligatorios",
     });
   }
 
@@ -32,6 +32,7 @@ exports.crearRutina = asyncHandler(async (req, res) => {
     nivelDeEquipo,
     posicion,
     descripcion,
+    categorizacion,
     creadoPor: req.user._id,
   });
 
@@ -58,11 +59,11 @@ exports.listarRutinas = asyncHandler(async (req, res) => {
 // @route   PUT /api/rutinas/:id
 // @access  Private (Admin)
 exports.actualizarRutina = asyncHandler(async (req, res) => {
-  const { equipo, nivelDeEquipo, posicion, descripcion } = req.body;
+  const { equipo, nivelDeEquipo, posicion, descripcion, categorizacion } = req.body;
 
-  if (!equipo || !nivelDeEquipo || !posicion) {
+  if (!equipo || !nivelDeEquipo || !posicion || !categorizacion) {
     return res.status(400).json({
-      mensaje: "Faltan campos requeridos: equipo, nivelDeEquipo y posicion son obligatorios",
+      mensaje: "Faltan campos requeridos: equipo, nivelDeEquipo, posicion y categorizacion son obligatorios",
     });
   }
 
@@ -79,6 +80,7 @@ exports.actualizarRutina = asyncHandler(async (req, res) => {
       nivelDeEquipo,
       posicion,
       descripcion,
+      categorizacion,
       creadoPor: req.user._id,
     },
     { new: true }
