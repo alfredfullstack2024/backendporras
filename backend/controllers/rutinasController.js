@@ -7,15 +7,15 @@ const asyncHandler = require("express-async-handler");
 // @route   POST /api/rutinas
 // @access  Private (Admin)
 exports.crearRutina = asyncHandler(async (req, res) => {
-  const { equipo, nivelDeEquipo, posicion, descripcion, categorizacion } = req.body;
+  const { equipo, nivelDeEquipo, posicion, descripcion } = req.body;
 
   console.log("Creando rutina - Paso 1: Datos recibidos:", req.body);
   console.log("Creando rutina - Paso 2: Usuario autenticado:", req.user);
 
-  if (!equipo || !nivelDeEquipo || !posicion || !categorizacion) {
+  if (!equipo || !nivelDeEquipo || !posicion) {
     console.log("Error: Faltan campos requeridos");
     return res.status(400).json({
-      mensaje: "Faltan campos requeridos: equipo, nivelDeEquipo, posicion y categorizacion son obligatorios",
+      mensaje: "Faltan campos requeridos: equipo, nivelDeEquipo y posicion son obligatorios",
     });
   }
 
@@ -32,7 +32,6 @@ exports.crearRutina = asyncHandler(async (req, res) => {
     nivelDeEquipo,
     posicion,
     descripcion,
-    categorizacion,
     creadoPor: req.user._id,
   });
 
@@ -59,11 +58,11 @@ exports.listarRutinas = asyncHandler(async (req, res) => {
 // @route   PUT /api/rutinas/:id
 // @access  Private (Admin)
 exports.actualizarRutina = asyncHandler(async (req, res) => {
-  const { equipo, nivelDeEquipo, posicion, descripcion, categorizacion } = req.body;
+  const { equipo, nivelDeEquipo, posicion, descripcion } = req.body;
 
-  if (!equipo || !nivelDeEquipo || !posicion || !categorizacion) {
+  if (!equipo || !nivelDeEquipo || !posicion) {
     return res.status(400).json({
-      mensaje: "Faltan campos requeridos: equipo, nivelDeEquipo, posicion y categorizacion son obligatorios",
+      mensaje: "Faltan campos requeridos: equipo, nivelDeEquipo y posicion son obligatorios",
     });
   }
 
@@ -80,7 +79,6 @@ exports.actualizarRutina = asyncHandler(async (req, res) => {
       nivelDeEquipo,
       posicion,
       descripcion,
-      categorizacion,
       creadoPor: req.user._id,
     },
     { new: true }
@@ -100,11 +98,11 @@ exports.actualizarRutina = asyncHandler(async (req, res) => {
 // @route   POST /api/rutinas/asignar
 // @access  Private (Admin, Entrenador)
 exports.asignarRutina = asyncHandler(async (req, res) => {
-  const { clienteId, categorizacion, diasEntrenamiento } = req.body;
+  const { clienteId, equipo, diasEntrenamiento } = req.body;
 
-  if (!clienteId || !categorizacion || !diasEntrenamiento) {
+  if (!clienteId || !equipo || !diasEntrenamiento) {
     return res.status(400).json({
-      mensaje: "Faltan campos requeridos: clienteId, categorizacion y diasEntrenamiento son obligatorios",
+      mensaje: "Faltan campos requeridos: clienteId, equipo y diasEntrenamiento son obligatorios",
     });
   }
 
@@ -122,7 +120,7 @@ exports.asignarRutina = asyncHandler(async (req, res) => {
   const rutinaAsignada = new RutinaAsignada({
     clienteId,
     numeroIdentificacion: cliente.numeroIdentificacion,
-    categorizacion,
+    equipo,
     diasEntrenamiento: Array.isArray(diasEntrenamiento) ? diasEntrenamiento : [],
     asignadaPor: req.user._id,
   });
@@ -138,11 +136,11 @@ exports.asignarRutina = asyncHandler(async (req, res) => {
 // @route   PUT /api/rutinas/asignar/:id
 // @access  Private (Admin, Entrenador)
 exports.actualizarAsignacionRutina = asyncHandler(async (req, res) => {
-  const { clienteId, categorizacion, diasEntrenamiento } = req.body;
+  const { clienteId, equipo, diasEntrenamiento } = req.body;
 
-  if (!clienteId || !categorizacion || !diasEntrenamiento) {
+  if (!clienteId || !equipo || !diasEntrenamiento) {
     return res.status(400).json({
-      mensaje: "Faltan campos requeridos: clienteId, categorizacion y diasEntrenamiento son obligatorios",
+      mensaje: "Faltan campos requeridos: clienteId, equipo y diasEntrenamiento son obligatorios",
     });
   }
 
@@ -156,7 +154,7 @@ exports.actualizarAsignacionRutina = asyncHandler(async (req, res) => {
     req.params.id,
     {
       clienteId,
-      categorizacion,
+      equipo,
       diasEntrenamiento: Array.isArray(diasEntrenamiento) ? diasEntrenamiento : [],
       asignadaPor: req.user._id,
     },
