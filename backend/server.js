@@ -3,7 +3,7 @@ console.log("Variables de entorno cargadas:", process.env.MONGODB_URI);
 
 const express = require("express");
 const cors = require("cors");
-const { connectDB } = require("./config/db"); // Importación correcta
+const { connectDB } = require("./config/db");
 const { protect } = require("./middleware/authMiddleware");
 
 // Función para depurar rutas
@@ -22,20 +22,20 @@ const debugRoutes = (prefix, router) => {
 const corsOptions = {
   origin: (origin, callback) => {
     const allowedOrigins = [
-      "https://frontendporras.vercel.app",
-      /^https:\/\/frontendporras-.*\.vercel\.app$/,
+      'https://admin-gimnasios-frontend-zue1.vercel.app',
+      /^https:\/\/admin-gimnasios-frontend-zue1-.*\.vercel\.app$/,
     ];
-    if (!origin || allowedOrigins.some(pattern => typeof pattern === "string" ? pattern === origin : pattern.test(origin))) {
+    if (!origin || allowedOrigins.some(pattern => typeof pattern === 'string' ? pattern === origin : pattern.test(origin))) {
       callback(null, true);
     } else {
       console.warn(`Origen no permitido por CORS: ${origin}`);
-      callback(new Error("No permitido por CORS"));
+      callback(new Error('No permitido por CORS'));
     }
   },
-  methods: ["GET", "POST", "PUT", "DELETE", "OPTIONS"],
-  allowedHeaders: ["Content-Type", "Authorization"],
+  methods: ['GET', 'POST', 'PUT', 'DELETE', 'OPTIONS'],
+  allowedHeaders: ['Content-Type', 'Authorization'],
   credentials: true,
-  optionsSuccessStatus: 200,
+  optionsSuccessStatus: 200
 };
 
 // Validar variables de entorno
@@ -50,8 +50,9 @@ if (!process.env.JWT_SECRET) {
 
 const app = express();
 
-// Middleware de CORS
+// Middleware de CORS (eliminamos app.options redundante)
 app.use(cors(corsOptions));
+
 app.use(express.json());
 
 // Middleware para registrar solicitudes
@@ -60,21 +61,17 @@ app.use((req, res, next) => {
   next();
 });
 
-// Importar y registrar modelos con logs
-console.log("Cargando modelos...");
+// Importar y registrar modelos
 require("./models/User");
 require("./models/Contabilidad");
 require("./models/Entrenador");
 require("./models/Cliente");
 require("./models/RegistroClases");
 require("./models/ComposicionCorporal");
-console.log("Modelos cargados exitosamente");
 
 // Conectar a MongoDB con manejo de errores
 console.log("Iniciando conexión a MongoDB...");
-connectDB().then(() => { // Corregido a connectDB
-  console.log("✅ Conexión a MongoDB establecida exitosamente");
-}).catch((error) => {
+connectDB().catch((error) => {
   console.error("❌ Error al conectar a MongoDB:", error.message);
   process.exit(1);
 });
