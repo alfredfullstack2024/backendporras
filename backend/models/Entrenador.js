@@ -1,25 +1,37 @@
 const mongoose = require("mongoose");
 
+const diaSchema = new mongoose.Schema({
+  dia: String,
+  horarioInicio: String,
+  horarioFin: String,
+});
+
+const claseSchema = new mongoose.Schema({
+  nombreClase: String,
+  capacidadMaxima: { type: Number, default: 10 },
+  dias: [diaSchema],
+});
+
 const entrenadorSchema = new mongoose.Schema({
   nombre: { type: String, required: true },
   apellido: { type: String, required: true },
   correo: { type: String, required: true, unique: true },
-  telefono: { type: String },
+  telefono: String,
   especialidad: { type: String, required: true },
-  diasHorarios: {
-    type: [
-      {
-        dia: { type: String, required: true, enum: ["Lunes", "Martes", "Miércoles", "Jueves", "Viernes", "Sábado", "Domingo"] },
-        horario: { type: String, required: true },
-      },
-    ],
-    required: true,
-  },
-  creadoPor: {
-    type: mongoose.Schema.Types.ObjectId,
-    ref: "Usuario",
-    required: true,
-  },
-}, { timestamps: true });
+  clases: [claseSchema],
+  creadoPor: { type: mongoose.Schema.Types.ObjectId, ref: "User" },
+  createdAt: { type: Date, default: Date.now },
+  updatedAt: { type: Date, default: Date.now },
+});
+
+entrenadorSchema.pre("save", function (next) {
+  this.updatedAt = Date.now();
+  next();
+});
+
+entrenadorSchema.pre("findOneAndUpdate", function (next) {
+  this.set({ updatedAt: Date.now() });
+  next();
+});
 
 module.exports = mongoose.model("Entrenador", entrenadorSchema);
