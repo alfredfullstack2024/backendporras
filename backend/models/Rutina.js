@@ -2,17 +2,14 @@ const mongoose = require("mongoose");
 
 const rutinaSchema = new mongoose.Schema(
   {
-    equipo: { type: String, required: true },
-    nivelDeEquipo: { type: String, required: true },
-    posicion: {
-      type: String,
-      required: true,
-      enum: ["Flyer", "Base", "Spotter"],
-    },
+    grupoMuscular: { type: String, required: true },
+    nombreEjercicio: { type: String, required: true },
+    series: { type: Number, required: true },
+    repeticiones: { type: Number, required: true },
     descripcion: { type: String },
     creadoPor: {
       type: mongoose.Schema.Types.ObjectId,
-      ref: "Usuario",
+      ref: "Usuario", // Asegurado que coincide con el modelo de usuario
       required: true,
     },
   },
