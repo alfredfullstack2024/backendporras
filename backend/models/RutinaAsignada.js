@@ -1,37 +1,17 @@
+// backend/models/RutinaAsignada.js
 const mongoose = require("mongoose");
 
-const RutinaAsignadaSchema = new mongoose.Schema({
-  clienteId: {
-    type: mongoose.Schema.Types.ObjectId,
-    ref: "Cliente",
-    required: true,
+const rutinaAsignadaSchema = new mongoose.Schema(
+  {
+    clienteId: { type: mongoose.Schema.Types.ObjectId, ref: "Cliente", required: true },
+    numeroIdentificacion: { type: String },
+    rutinaId: { type: mongoose.Schema.Types.ObjectId, ref: "Rutina", required: true },
+    diasEntrenamiento: [{ type: String }], // ej: ["Lunes","Miercoles"]
+    diasDescanso: [{ type: String }],
+    asignadaPor: { type: mongoose.Schema.Types.ObjectId, ref: "User", required: true },
+    createdAt: { type: Date, default: Date.now },
   },
-  numeroIdentificacion: {
-    type: String,
-    required: true,
-  },
-  rutinaId: {
-    type: mongoose.Schema.Types.ObjectId,
-    ref: "Rutina",
-    required: true,
-  },
-  diasEntrenamiento: {
-    type: [String],
-    required: true,
-  },
-  diasDescanso: {
-    type: [String],
-    required: true,
-  },
-  asignadaPor: {
-    type: mongoose.Schema.Types.ObjectId,
-    ref: "User",
-    required: true,
-  },
-  fechaAsignacion: {
-    type: Date,
-    default: Date.now,
-  },
-});
+  { timestamps: true }
+);
 
-module.exports = mongoose.model("RutinaAsignada", RutinaAsignadaSchema);
+module.exports = mongoose.model("RutinaAsignada", rutinaAsignadaSchema);
