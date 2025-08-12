@@ -1,15 +1,15 @@
-// backend/models/Rutina.js
 const mongoose = require("mongoose");
 
 const rutinaSchema = new mongoose.Schema(
   {
-    equipo: { type: String, required: true },          // antes: nombreEjercicio
-    nivelDeEquipo: { type: String, required: true },   // antes: series -> ahora categoría / nivel
-    posicion: { type: String, required: true },        // antes: repeticiones -> ahora posición (Flyer, Base...)
+    grupoMuscular: { type: String, required: true },
+    nombreEjercicio: { type: String, required: true },
+    series: { type: Number, required: true },
+    repeticiones: { type: Number, required: true },
     descripcion: { type: String },
     creadoPor: {
       type: mongoose.Schema.Types.ObjectId,
-      ref: "User", // coincide con backend/models/User.js -> mongoose.model("User", ...)
+      ref: "Usuario", // Asegurado que coincide con el modelo de usuario
       required: true,
     },
   },
