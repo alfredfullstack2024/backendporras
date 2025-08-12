@@ -21,10 +21,9 @@ const debugRoutes = (prefix, router) => {
 // Configuración de CORS
 const corsOptions = {
   origin: (origin, callback) => {
-    const allowedOrigins = [
-      'https://https://frontendporras.vercel.app',
-      /^https:\/\/frontendporras-.*\.vercel\.app$/,
-      'http://localhost:3000', // Agrega localhost para pruebas locales
+    const allowedOrigins = ['https://frontendporras.vercel.app',
+  /^https:\/\/frontendporras-.*\.vercel\.app$/,
+
     ];
     console.log(`🔍 Origen recibido: ${origin}`); // Depuración
     if (!origin || allowedOrigins.some(pattern => typeof pattern === 'string' ? pattern === origin : pattern.test(origin))) {
@@ -158,4 +157,5 @@ const PORT = process.env.PORT || 5000;
 app.listen(PORT, () => {
   console.log(`🚀 Servidor corriendo en el puerto ${PORT}`);
 });
+
 
