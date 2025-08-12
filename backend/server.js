@@ -21,11 +21,12 @@ const debugRoutes = (prefix, router) => {
 // Configuración de CORS
 const corsOptions = {
   origin: (origin, callback) => {
-    const allowedOrigins = ['https://frontendporras.vercel.app',
-  /^https:\/\/frontendporras-.*\.vercel\.app$/,
-
+    const allowedOrigins = [
+      'https://frontendporras.vercel.app',
+      /^https:\/\/frontendporras-.*\.vercel\.app$/,
+      'http://localhost:3000', // Agregado para pruebas locales
     ];
-    console.log(`🔍 Origen recibido: ${origin}`); // Depuración
+    console.log(`🔍 Origen recibido: ${origin}`);
     if (!origin || allowedOrigins.some(pattern => typeof pattern === 'string' ? pattern === origin : pattern.test(origin))) {
       callback(null, true);
     } else {
@@ -69,6 +70,7 @@ require("./models/Entrenador");
 require("./models/Cliente");
 require("./models/RegistroClases");
 require("./models/ComposicionCorporal");
+require("./models/MedicionPorristas");
 
 // Conectar a MongoDB con manejo de errores
 console.log("Iniciando conexión a MongoDB...");
@@ -91,6 +93,7 @@ const indicadorRoutes = require("./routes/indicadorRoutes");
 const asistenciaRoutes = require("./routes/asistenciaRoutes");
 const rutinaRoutes = require("./routes/rutinas");
 const composicionCorporalRoutes = require("./routes/composicionCorporal");
+const medicionPorristasRoutes = require("./routes/medicionPorristas");
 
 // Middleware para rutas públicas y protegidas
 app.use((req, res, next) => {
@@ -127,6 +130,8 @@ debugRoutes("/api/rutinas", rutinaRoutes);
 app.use("/api/rutinas", rutinaRoutes);
 debugRoutes("/api/composicion-corporal", composicionCorporalRoutes);
 app.use("/api/composicion-corporal", composicionCorporalRoutes);
+debugRoutes("/api/medicion-porristas", medicionPorristasRoutes);
+app.use("/api/medicion-porristas", medicionPorristasRoutes);
 
 // Ruta raíz
 app.get("/", (req, res) => {
@@ -157,5 +162,3 @@ const PORT = process.env.PORT || 5000;
 app.listen(PORT, () => {
   console.log(`🚀 Servidor corriendo en el puerto ${PORT}`);
 });
-
-
