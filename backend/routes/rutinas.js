@@ -1,4 +1,3 @@
-// backend/routes/rutinas.js
 const express = require("express");
 const router = express.Router();
 const rutinaController = require("../controllers/rutinasController");
@@ -9,7 +8,10 @@ router.post(
   "/",
   protect,
   (req, res, next) => {
-    console.log("Ruta POST /api/rutinas - req.user después de protect:", req.user);
+    console.log(
+      "Ruta POST /api/rutinas - req.user después de protect:",
+      req.user
+    );
     next();
   },
   verificarPermisos(["admin", "entrenador"]),
@@ -21,7 +23,10 @@ router.get(
   "/",
   protect,
   (req, res, next) => {
-    console.log("Ruta GET /api/rutinas - req.user después de protect:", req.user);
+    console.log(
+      "Ruta GET /api/rutinas - req.user después de protect:",
+      req.user
+    );
     next();
   },
   verificarPermisos(["admin", "entrenador"]),
@@ -33,7 +38,10 @@ router.put(
   "/:id",
   protect,
   (req, res, next) => {
-    console.log("Ruta PUT /api/rutinas/:id - req.user después de protect:", req.user);
+    console.log(
+      "Ruta PUT /api/rutinas/:id - req.user después de protect:",
+      req.user
+    );
     next();
   },
   verificarPermisos(["admin"]),
@@ -45,43 +53,55 @@ router.post(
   "/asignar",
   protect,
   (req, res, next) => {
-    console.log("Ruta POST /api/rutinas/asignar - req.user después de protect:", req.user);
+    console.log(
+      "Ruta POST /api/rutinas/asignar - req.user después de protect:",
+      req.user
+    );
     next();
   },
   verificarPermisos(["admin", "entrenador"]),
   rutinaController.asignarRutina
 );
 
-// Actualizar asignación (Admin y Entrenador)
+// Actualizar una asignación de rutina (Admin y Entrenador)
 router.put(
   "/asignar/:id",
   protect,
   (req, res, next) => {
-    console.log("Ruta PUT /api/rutinas/asignar/:id - req.user después de protect:", req.user);
+    console.log(
+      "Ruta PUT /api/rutinas/asignar/:id - req.user después de protect:",
+      req.user
+    );
     next();
   },
   verificarPermisos(["admin", "entrenador"]),
   rutinaController.actualizarAsignacionRutina
 );
 
-// Eliminar asignación (Solo admin)
+// Eliminar una asignación de rutina (Solo admin)
 router.delete(
   "/asignar/:id",
   protect,
   (req, res, next) => {
-    console.log("Ruta DELETE /api/rutinas/asignar/:id - req.user después de protect:", req.user);
+    console.log(
+      "Ruta DELETE /api/rutinas/asignar/:id - req.user después de protect:",
+      req.user
+    );
     next();
   },
   verificarPermisos(["admin"]),
   rutinaController.eliminarAsignacionRutina
 );
 
-// Consultar rutinas asignadas por número de identificación (Admin, Entrenador, Usuario)
+// Consultar todas las rutinas asignadas por número de identificación (Admin, Entrenador y Usuario)
 router.get(
   "/consultarRutinasPorNumeroIdentificacion/:numeroIdentificacion",
   protect,
   (req, res, next) => {
-    console.log("Ruta GET /api/rutinas/consultarRutinasPorNumeroIdentificacion/:numeroIdentificacion - req.user después de protect:", req.user);
+    console.log(
+      "Ruta GET /api/rutinas/consultarRutinasPorNumeroIdentificacion/:numeroIdentificacion - req.user después de protect:",
+      req.user
+    );
     next();
   },
   verificarPermisos(["admin", "entrenador", "user"]),
