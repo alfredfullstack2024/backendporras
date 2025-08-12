@@ -35,4 +35,3 @@ module.exports = mongoose.model(
   "ComposicionCorporal",
   composicionCorporalSchema
 );
-
