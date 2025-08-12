@@ -22,8 +22,8 @@ const debugRoutes = (prefix, router) => {
 const corsOptions = {
   origin: (origin, callback) => {
     const allowedOrigins = [
-      'https://admin-gimnasios-frontend-zue1.vercel.app',
-      /^https:\/\/admin-gimnasios-frontend-zue1-.*\.vercel\.app$/,
+      'https://https://frontendporras.vercel.app',
+      /^https:\/\/frontendporras-.*\.vercel\.app$/,
       'http://localhost:3000', // Agrega localhost para pruebas locales
     ];
     console.log(`🔍 Origen recibido: ${origin}`); // Depuración
@@ -158,3 +158,4 @@ const PORT = process.env.PORT || 5000;
 app.listen(PORT, () => {
   console.log(`🚀 Servidor corriendo en el puerto ${PORT}`);
 });
+
