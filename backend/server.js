@@ -24,7 +24,9 @@ const corsOptions = {
     const allowedOrigins = [
       'https://admin-gimnasios-frontend-zue1.vercel.app',
       /^https:\/\/admin-gimnasios-frontend-zue1-.*\.vercel\.app$/,
+      'http://localhost:3000', // Agrega localhost para pruebas locales
     ];
+    console.log(`🔍 Origen recibido: ${origin}`); // Depuración
     if (!origin || allowedOrigins.some(pattern => typeof pattern === 'string' ? pattern === origin : pattern.test(origin))) {
       callback(null, true);
     } else {
@@ -50,7 +52,7 @@ if (!process.env.JWT_SECRET) {
 
 const app = express();
 
-// Middleware de CORS (eliminamos app.options redundante)
+// Middleware de CORS
 app.use(cors(corsOptions));
 
 app.use(express.json());
