@@ -2,7 +2,6 @@ const express = require("express");
 const cors = require("cors");
 const { MongoClient } = require("realm");
 const router = require("./routes/index");
-const migrationRoutes = require("./routes/migrationRoutes");
 
 const app = express();
 
@@ -41,9 +40,9 @@ app.use(async (req, res, next) => {
   next();
 });
 
-// Monta las rutas
+// Monta las rutas (agrega un log para depuración)
+console.log("Montando rutas en /api");
 app.use("/api", router);
-app.use("/api/migrate", migrationRoutes); // Mantén esta ruta si la usaste antes
 
 // Exporta la app para Vercel
 module.exports = app;
