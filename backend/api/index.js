@@ -2,6 +2,7 @@ const express = require("express");
 const cors = require("cors");
 const { MongoClient } = require("realm");
 const router = require("./routes/index"); // Importa las rutas existentes
+const migrationRoutes = require("./routes/migrationRoutes"); // Nueva importación
 
 const app = express();
 
@@ -42,7 +43,7 @@ app.use(async (req, res, next) => {
 
 // Usa las rutas existentes
 app.use("/api", router);
+app.use("/api/migrate", migrationRoutes); // Nueva ruta para migración
 
 // Exporta la app para Vercel
 module.exports = app;
-
