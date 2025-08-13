@@ -1,11 +1,11 @@
 const express = require("express");
 const router = express.Router();
-const { protect } = require("../middleware/authMiddleware"); // Asegúrate de que este middleware esté disponible
+const { protect } = require("../middleware/authMiddleware");
 const clienteController = require("../controllers/clienteController");
 const membresiaController = require("../controllers/membresiaController");
 const productoController = require("../controllers/productoController");
 const indicadoresController = require("../controllers/indicadoresController");
-const medicionPorristasController = require("../controllers/medicionPorristasController"); // Asumido
+const medicionPorristasController = require("../controllers/medicionPorristasController");
 
 // Rutas para clientes
 router.get("/clientes", clienteController.obtenerClientes);
@@ -32,9 +32,7 @@ router.delete("/productos/:id", productoController.eliminarProducto);
 router.get("/indicadores", indicadoresController.obtenerIndicadores);
 
 // Rutas para mediciones porristas
-router.post("/medicion-porristas", protect, medicionPorristasController.crearMedicionPorristas); // Asumido
-router.get("/medicion-porristas", protect, medicionPorristasController.obtenerMedicionesPorristas); // Asumido
-router.put("/medicion-porristas/:id", protect, medicionPorristasController.editarMedicionPorristas); // Asumido
-router.delete("/medicion-porristas/:id", protect, medicionPorristasController.eliminarMedicionPorristas); // Nuevo
-
-module.exports = router;
+router.post("/medicion-porristas", protect, medicionPorristasController.crearMedicionPorristas);
+router.get("/medicion-porristas", protect, medicionPorristasController.listarMedicionesPorristas);
+router.put("/medicion-porristas/:id", protect, medicionPorristasController.actualizarMedicionPorristas);
+router.delete("/medicion-porristas/:id", protect, medicionPorristasController.eliminarMedicionPorristas);
