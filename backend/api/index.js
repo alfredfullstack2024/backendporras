@@ -1,15 +1,15 @@
 const express = require("express");
 const cors = require("cors");
 const { MongoClient } = require("realm");
-const router = require("./routes/index"); // Importa las rutas existentes
-const migrationRoutes = require("./routes/migrationRoutes"); // Nueva importación
+const router = require("./routes/index");
+const migrationRoutes = require("./routes/migrationRoutes");
 
 const app = express();
 
 // Configura CORS para tu frontend
 app.use(
   cors({
-    origin: "https://tu-proyecto-frente.vercel.app", // Reemplaza con tu dominio de Vercel
+    origin: "https://frontendporras-m7dzbit26-alfredos-projects-a028b04c.vercel.app",
     methods: "GET,POST,PUT,DELETE",
     credentials: true,
   })
@@ -19,7 +19,7 @@ app.use(
 app.use(express.json());
 
 // Conexión a MongoDB con Realm
-const appId = process.env.REALM_APP_ID; // Añade en variables de entorno
+const appId = process.env.REALM_APP_ID;
 const apiKey = process.env.REALM_API_KEY;
 const realmApp = new Realm.App({ id: appId });
 
@@ -35,15 +35,15 @@ async function connectToMongo() {
   }
 }
 
-// Inyecta la conexión en las rutas (ajústalos si usan Mongoose)
+// Inyecta la conexión en las rutas
 app.use(async (req, res, next) => {
   req.db = await connectToMongo();
   next();
 });
 
-// Usa las rutas existentes
+// Monta las rutas
 app.use("/api", router);
-app.use("/api/migrate", migrationRoutes); // Nueva ruta para migración
+app.use("/api/migrate", migrationRoutes); // Mantén esta ruta si la usaste antes
 
 // Exporta la app para Vercel
 module.exports = app;
