@@ -1,17 +1,17 @@
 const MedicionPorristas = require("../models/MedicionPorristas");
 const Entrenador = require("../models/Entrenador");
+const Cliente = require("../models/Cliente");
 const asyncHandler = require("express-async-handler");
 
 // @desc    Crear una nueva medición de porristas
 // @route   POST /api/medicion-porristas
 // @access  Private (Admin, Entrenador)
 exports.crearMedicionPorristas = asyncHandler(async (req, res) => {
-  const { entrenadorId, equipo, categoria, posicion, descripcion } = req.body;
+  const { clienteId, entrenadorId, equipo, categoria, posicion, ejercicios, descripcion } = req.body;
 
-  if (!entrenadorId || !equipo || !categoria || !posicion) {
+  if (!clienteId || !entrenadorId || !equipo || !categoria || !posicion || !ejercicios || ejercicios.length === 0) {
     return res.status(400).json({
-      mensaje:
-        "Faltan campos requeridos: entrenadorId, equipo, categoria y posicion son obligatorios",
+      mensaje: "Faltan campos requeridos: clienteId, entrenadorId, equipo, categoria, posicion y ejercicios son obligatorios",
     });
   }
 
@@ -21,33 +21,38 @@ exports.crearMedicionPorristas = asyncHandler(async (req, res) => {
     });
   }
 
-  const entrenador = await Entrenador.findById(entrenadorId);
+  const [cliente, entrenador] = await Promise.all([
+    Cliente.findById(clienteId),
+    Entrenador.findById(entrenadorId),
+  ]);
+
+  if (!cliente) {
+    return res.status(404).json({ mensaje: "Cliente no encontrado" });
+  }
   if (!entrenador) {
     return res.status(404).json({ mensaje: "Entrenador no encontrado" });
   }
 
   const nuevaMedicion = new MedicionPorristas({
+    clienteId,
     entrenadorId,
     equipo,
     categoria,
     posicion,
+    ejercicios,
     descripcion,
     creadoPor: req.user._id,
   });
 
   const medicionCreada = await nuevaMedicion.save();
-  res
-    .status(201)
-    .json({ mensaje: "Medición creada con éxito", medicion: medicionCreada });
+  res.status(201).json({ mensaje: "Medición creada con éxito", medicion: medicionCreada });
 });
 
 // @desc    Listar todas las mediciones de porristas
 // @route   GET /api/medicion-porristas
 // @access  Private (Admin, Entrenador)
 exports.listarMedicionesPorristas = asyncHandler(async (req, res) => {
-  const mediciones = await MedicionPorristas.find()
-    .populate("entrenadorId", "nombre especialidad")
-    .populate("creadoPor", "nombre");
+  const mediciones = await MedicionPorristas.find().populate("clienteId", "nombre").populate("entrenadorId", "nombre especialidad").populate("creadoPor", "nombre");
   res.json(mediciones);
 });
 
@@ -55,12 +60,11 @@ exports.listarMedicionesPorristas = asyncHandler(async (req, res) => {
 // @route   PUT /api/medicion-porristas/:id
 // @access  Private (Admin)
 exports.actualizarMedicionPorristas = asyncHandler(async (req, res) => {
-  const { entrenadorId, equipo, categoria, posicion, descripcion } = req.body;
+  const { clienteId, entrenadorId, equipo, categoria, posicion, ejercicios, descripcion } = req.body;
 
-  if (!entrenadorId || !equipo || !categoria || !posicion) {
+  if (!clienteId || !entrenadorId || !equipo || !categoria || !posicion || !ejercicios || ejercicios.length === 0) {
     return res.status(400).json({
-      mensaje:
-        "Faltan campos requeridos: entrenadorId, equipo, categoria y posicion son obligatorios",
+      mensaje: "Faltan campos requeridos: clienteId, entrenadorId, equipo, categoria, posicion y ejercicios son obligatorios",
     });
   }
 
@@ -70,7 +74,14 @@ exports.actualizarMedicionPorristas = asyncHandler(async (req, res) => {
     });
   }
 
-  const entrenador = await Entrenador.findById(entrenadorId);
+  const [cliente, entrenador] = await Promise.all([
+    Cliente.findById(clienteId),
+    Entrenador.findById(entrenadorId),
+  ]);
+
+  if (!cliente) {
+    return res.status(404).json({ mensaje: "Cliente no encontrado" });
+  }
   if (!entrenador) {
     return res.status(404).json({ mensaje: "Entrenador no encontrado" });
   }
@@ -78,14 +89,16 @@ exports.actualizarMedicionPorristas = asyncHandler(async (req, res) => {
   const medicionActualizada = await MedicionPorristas.findByIdAndUpdate(
     req.params.id,
     {
+      clienteId,
       entrenadorId,
       equipo,
       categoria,
       posicion,
+      ejercicios,
       descripcion,
       creadoPor: req.user._id,
     },
-    { new: true }
+    { new: true, runValidators: true }
   );
 
   if (!medicionActualizada) {
