@@ -17,7 +17,7 @@ const entrenadorSchema = new mongoose.Schema({
   apellido: { type: String, required: true },
   correo: { type: String, required: true, unique: true },
   telefono: String,
-  especialidad: { type: String, required: true },
+  especialidad: [{ type: String, required: true }], // Cambiado a array de strings
   clases: [claseSchema],
   creadoPor: { type: mongoose.Schema.Types.ObjectId, ref: "User" },
   createdAt: { type: Date, default: Date.now },
