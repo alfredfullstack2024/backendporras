@@ -45,3 +45,4 @@ app.use("/api", router);
 
 // Exporta la app para Vercel
 module.exports = app;
+
