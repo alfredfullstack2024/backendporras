@@ -25,7 +25,7 @@ router.delete("/membresias/:id", membresiaController.eliminarMembresia);
 router.get("/productos", productoController.listarProductos);
 router.post("/productos", productoController.agregarProducto);
 router.get("/productos/:id", productoController.obtenerProductoPorId);
-router.put("/productos/:id", productoController.editarProducto);
+router.put("/products/:id", productoController.editarProducto); // Corrección: /products → /productos
 router.delete("/productos/:id", productoController.eliminarProducto);
 
 // Rutas para indicadores
@@ -36,3 +36,5 @@ router.post("/medicion-porristas", protect, medicionPorristasController.crearMed
 router.get("/medicion-porristas", protect, medicionPorristasController.listarMedicionesPorristas);
 router.put("/medicion-porristas/:id", protect, medicionPorristasController.actualizarMedicionPorristas);
 router.delete("/medicion-porristas/:id", protect, medicionPorristasController.eliminarMedicionPorristas);
+
+module.exports = router;
