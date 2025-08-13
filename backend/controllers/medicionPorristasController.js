@@ -52,7 +52,7 @@ exports.crearMedicionPorristas = asyncHandler(async (req, res) => {
 // @route   GET /api/medicion-porristas
 // @access  Private (Admin, Entrenador)
 exports.listarMedicionesPorristas = asyncHandler(async (req, res) => {
-  const mediciones = await MedicionPorristas.find().populate("clienteId", "nombre").populate("entrenadorId", "nombre especialidad").populate("creadoPor", "nombre");
+  const mediciones = await MedicionPorristas.find().populate("clienteId", "nombre apellido").populate("entrenadorId", "nombre apellido especialidad").populate("creadoPor", "nombre apellido");
   res.json(mediciones);
 });
 
@@ -109,4 +109,23 @@ exports.actualizarMedicionPorristas = asyncHandler(async (req, res) => {
     mensaje: "Medición actualizada con éxito",
     medicion: medicionActualizada,
   });
+});
+
+// @desc    Eliminar una medición de porristas
+// @route   DELETE /api/medicion-porristas/:id
+// @access  Private (Admin)
+exports.eliminarMedicionPorristas = asyncHandler(async (req, res) => {
+  if (!req.user || !req.user._id) {
+    return res.status(401).json({
+      mensaje: "No autorizado: Usuario no autenticado o ID no disponible",
+    });
+  }
+
+  const medicion = await MedicionPorristas.findById(req.params.id);
+  if (!medicion) {
+    return res.status(404).json({ mensaje: "Medición no encontrada" });
+  }
+
+  await MedicionPorristas.deleteOne({ _id: req.params.id });
+  res.json({ mensaje: "Medición eliminada con éxito" });
 });
