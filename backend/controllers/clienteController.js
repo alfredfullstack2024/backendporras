@@ -92,7 +92,7 @@ const crearCliente = async (req, res) => {
       apellido: apellido || "",
       email,
       telefono: telefono || "",
-      direccion: direccion || "",
+      direccion: direccion || "", // Aseguramos que se asigne, aunque sea vacío
       estado: estado ? estado.toLowerCase() : "activo",
       numeroIdentificacion,
       fechaNacimiento,
@@ -199,7 +199,7 @@ const actualizarCliente = async (req, res) => {
     cliente.apellido = apellido || "";
     cliente.email = email || cliente.email;
     cliente.telefono = telefono || "";
-    cliente.direccion = direccion || "";
+    cliente.direccion = direccion || ""; // Aseguramos que se asigne
     cliente.estado = estado ? estado.toLowerCase() : cliente.estado;
     cliente.numeroIdentificacion = numeroIdentificacion || cliente.numeroIdentificacion;
     cliente.fechaNacimiento = fechaNacimiento || cliente.fechaNacimiento;
