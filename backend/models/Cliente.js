@@ -14,6 +14,7 @@ const clienteSchema = new mongoose.Schema({
   tallaTrenSuperior: { type: String },
   tallaTrenInferior: { type: String },
   nombreResponsable: { type: String },
+  direccion: { type: String }, // Aseguramos que esté definido
   fechaRegistro: { type: Date, default: Date.now },
   estado: { type: String, enum: ["activo", "inactivo"], default: "activo" },
   membresias: [{ type: mongoose.Schema.Types.ObjectId, ref: "Membresia" }],
