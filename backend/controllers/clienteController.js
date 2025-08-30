@@ -5,7 +5,7 @@ const Membresia = require("../models/Membresia");
 const obtenerClientes = async (req, res) => {
   try {
     const clientes = await Cliente.find().select(
-      "nombre apellido email telefono direccion estado numeroIdentificacion fechaRegistro"
+      "nombre apellido email telefono direccion estado numeroIdentificacion fechaRegistro fechaNacimiento edad tipoDocumento rh eps tallaTrenSuperior tallaTrenInferior nombreResponsable"
     );
     console.log("Clientes obtenidos:", clientes);
     res.status(200).json(clientes);
@@ -43,12 +43,20 @@ const crearCliente = async (req, res) => {
       direccion,
       estado,
       numeroIdentificacion,
+      fechaNacimiento,
+      edad,
+      tipoDocumento,
+      rh,
+      eps,
+      tallaTrenSuperior,
+      tallaTrenInferior,
+      nombreResponsable,
     } = req.body;
     console.log("Datos recibidos para crear cliente:", req.body);
 
-    if (!nombre || !email || !numeroIdentificacion) {
+    if (!nombre || !email || !numeroIdentificacion || !fechaNacimiento || !edad || !tipoDocumento) {
       return res.status(400).json({
-        message: "Nombre, email y número de identificación son obligatorios",
+        message: "Nombre, email, número de identificación, fecha de nacimiento, edad y tipo de documento son obligatorios",
       });
     }
 
@@ -68,6 +76,10 @@ const crearCliente = async (req, res) => {
         .json({ message: "Estado debe ser 'activo' o 'inactivo'" });
     }
 
+    if (isNaN(edad) || edad <= 0) {
+      return res.status(400).json({ message: "La edad debe ser un número positivo" });
+    }
+
     const clienteExistente = await Cliente.findOne({ numeroIdentificacion });
     if (clienteExistente) {
       return res
@@ -83,6 +95,14 @@ const crearCliente = async (req, res) => {
       direccion: direccion || "",
       estado: estado ? estado.toLowerCase() : "activo",
       numeroIdentificacion,
+      fechaNacimiento,
+      edad,
+      tipoDocumento,
+      rh: rh || "",
+      eps: eps || "",
+      tallaTrenSuperior: tallaTrenSuperior || "",
+      tallaTrenInferior: tallaTrenInferior || "",
+      nombreResponsable: nombreResponsable || "",
       fechaRegistro: new Date(),
     });
 
@@ -123,15 +143,23 @@ const actualizarCliente = async (req, res) => {
       direccion,
       estado,
       numeroIdentificacion,
+      fechaNacimiento,
+      edad,
+      tipoDocumento,
+      rh,
+      eps,
+      tallaTrenSuperior,
+      tallaTrenInferior,
+      nombreResponsable,
     } = req.body;
     const cliente = await Cliente.findById(req.params.id);
     if (!cliente) {
       return res.status(404).json({ message: "Cliente no encontrado" });
     }
 
-    if (!nombre || !email || !numeroIdentificacion) {
+    if (!nombre || !email || !numeroIdentificacion || !fechaNacimiento || !edad || !tipoDocumento) {
       return res.status(400).json({
-        message: "Nombre, email y número de identificación son obligatorios",
+        message: "Nombre, email, número de identificación, fecha de nacimiento, edad y tipo de documento son obligatorios",
       });
     }
 
@@ -149,6 +177,10 @@ const actualizarCliente = async (req, res) => {
       return res
         .status(400)
         .json({ message: "Estado debe ser 'activo' o 'inactivo'" });
+    }
+
+    if (isNaN(edad) || edad <= 0) {
+      return res.status(400).json({ message: "La edad debe ser un número positivo" });
     }
 
     if (
@@ -169,8 +201,15 @@ const actualizarCliente = async (req, res) => {
     cliente.telefono = telefono || "";
     cliente.direccion = direccion || "";
     cliente.estado = estado ? estado.toLowerCase() : cliente.estado;
-    cliente.numeroIdentificacion =
-      numeroIdentificacion || cliente.numeroIdentificacion;
+    cliente.numeroIdentificacion = numeroIdentificacion || cliente.numeroIdentificacion;
+    cliente.fechaNacimiento = fechaNacimiento || cliente.fechaNacimiento;
+    cliente.edad = edad || cliente.edad;
+    cliente.tipoDocumento = tipoDocumento || cliente.tipoDocumento;
+    cliente.rh = rh || cliente.rh;
+    cliente.eps = eps || cliente.eps;
+    cliente.tallaTrenSuperior = tallaTrenSuperior || cliente.tallaTrenSuperior;
+    cliente.tallaTrenInferior = tallaTrenInferior || cliente.tallaTrenInferior;
+    cliente.nombreResponsable = nombreResponsable || cliente.nombreResponsable;
 
     const clienteActualizado = await cliente.save();
     console.log("Cliente actualizado:", clienteActualizado);
@@ -205,7 +244,6 @@ const obtenerClientesActivos = async (req, res) => {
     const fechaActual = new Date();
     console.log("Fecha actual:", fechaActual);
 
-    // Buscar membresías activas
     const membresiasActivas = await Membresia.find({
       estado: "activa",
       fechafin: { $gt: fechaActual },
@@ -213,11 +251,9 @@ const obtenerClientesActivos = async (req, res) => {
 
     console.log("Membresías activas encontradas:", membresiasActivas);
 
-    // Contar clientes únicos con membresías activas
     const clientesActivos = membresiasActivas.length;
     console.log("Clientes activos encontrados:", clientesActivos);
 
-    // Enviar respuesta
     res.status(200).json({ clientesActivos });
   } catch (error) {
     console.error("Error al obtener clientes activos:", error.message);
