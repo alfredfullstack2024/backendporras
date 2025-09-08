@@ -7,7 +7,7 @@ const clienteSchema = new mongoose.Schema({
   telefono: { type: String },
   email: { type: String },
   fechaNacimiento: { type: Date, required: true },
-  edad: { type: Number }, // calculada automáticamente
+  edad: { type: Number }, // se calcula automáticamente
   tipoDocumento: {
     type: String,
     enum: ["C.C", "T.I", "RC", "PPT"],
@@ -23,10 +23,10 @@ const clienteSchema = new mongoose.Schema({
   fechaRegistro: { type: Date, default: Date.now },
   estado: { type: String, enum: ["activo", "inactivo"], default: "activo" },
   membresias: [{ type: mongoose.Schema.Types.ObjectId, ref: "Membresia" }],
-  equipo: { type: String }, // que viene del frontend
+  equipo: { type: String },
 });
 
-// Middleware: calcular edad antes de guardar
+// Middleware para calcular edad antes de guardar
 clienteSchema.pre("save", function (next) {
   if (this.fechaNacimiento) {
     const hoy = new Date();
